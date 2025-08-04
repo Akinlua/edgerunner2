@@ -3,7 +3,7 @@ import path from 'path';
 import configurations from "../../configurations/index.js";
 import { addGamesToProcessingQueue } from './bot.service.js';
 
-const POLLING_INTERVAL_MS = 1000;
+const POLLING_INTERVAL_S = 20;
 const ALERT_API_URL = `https://swordfish-production.up.railway.app/alerts/${configurations.USER_ID}`;
 const DUMP_FILE_PATH = path.join(process.cwd(), 'data', 'provider_dump.json');
 
@@ -52,17 +52,15 @@ async function poll() {
 				botState.alertsFound += notifications.length;
 				botState.statusMessage = `SUCCESS: Received ${notifications.length} new alerts.`;
 
-				// --- NEW: Save the received data to a file for inspection ---
 				try {
-					// JSON.stringify with formatting for readability
+					// Ensure the data/ directory exists
+					const dir = path.dirname(DUMP_FILE_PATH);
+					await fs.mkdir(dir, { recursive: true });
 					await fs.writeFile(DUMP_FILE_PATH, JSON.stringify(notifications, null, 2));
 					console.log(`[Provider Service] Successfully dumped ${notifications.length} alerts to ${DUMP_FILE_PATH}`);
 				} catch (writeError) {
 					console.error('[Provider] Error writing data to dump file:', writeError);
 				}
-				// --- END OF NEW CODE ---
-
-				// Send the found notifications to the bot for processing
 				addGamesToProcessingQueue(notifications);
 
 			} else {
@@ -77,85 +75,85 @@ async function poll() {
 			console.log(`[Provider] ${botState.statusMessage} | Cursor: ${botState.cursor}`);
 		}
 
-		await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL_MS));
+		await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL_S * 1000));
 	}
 }
 
 export function devigOdds(providerData) {
-    const {
-        lineType,
-        priceHome,
-        priceAway,
-        priceDraw,
-        priceOver,
-        priceUnder,
-    } = providerData;
+	const {
+		lineType,
+		priceHome,
+		priceAway,
+		priceDraw,
+		priceOver,
+		priceUnder,
+	} = providerData;
 
-    // Helper to parse and validate odds
-    const parseOdd = (odd, fieldName) => {
-        const parsed = parseFloat(odd);
-        if (isNaN(parsed) || parsed <= 1) {
-            throw new Error(`Invalid odd for ${fieldName}: ${odd}`);
-        }
-        return parsed;
-    };
+	// Helper to parse and validate odds
+	const parseOdd = (odd, fieldName) => {
+		const parsed = parseFloat(odd);
+		if (isNaN(parsed) || parsed <= 1) {
+			throw new Error(`Invalid odd for ${fieldName}: ${odd}`);
+		}
+		return parsed;
+	};
 
-    try {
-        let odds = [];
-        let outcomeKeys = [];
+	try {
+		let odds = [];
+		let outcomeKeys = [];
 
-        // Gather odds and define outcomes based on line type
-        if (lineType === 'money_line') {
-            if (!priceHome || !priceAway || !priceDraw) {
-                throw new Error('Missing prices for money_line');
-            }
-            odds = [
-                parseOdd(priceHome, 'priceHome'),
-                parseOdd(priceAway, 'priceAway'),
-                parseOdd(priceDraw, 'priceDraw'),
-            ];
-            outcomeKeys = ['home', 'away', 'draw'];
-        } else if (lineType === 'total') {
-            if (!priceOver || !priceUnder) {
-                throw new Error('Missing prices for total');
-            }
-            odds = [
-                parseOdd(priceOver, 'priceOver'),
-                parseOdd(priceUnder, 'priceUnder'),
-            ];
-            outcomeKeys = ['over', 'under'];
-        } else if (lineType === 'spread') {
-            if (!priceHome || !priceAway) {
-                throw new Error('Missing prices for spread');
-            }
-            odds = [
-                parseOdd(priceHome, 'priceHome'),
-                parseOdd(priceAway, 'priceAway'),
-            ];
-            outcomeKeys = ['home', 'away'];
-        } else {
-            throw new Error(`Unsupported line type: ${lineType}`);
-        }
+		// Gather odds and define outcomes based on line type
+		if (lineType === 'money_line') {
+			if (!priceHome || !priceAway || !priceDraw) {
+				throw new Error('Missing prices for money_line');
+			}
+			odds = [
+				parseOdd(priceHome, 'priceHome'),
+				parseOdd(priceAway, 'priceAway'),
+				parseOdd(priceDraw, 'priceDraw'),
+			];
+			outcomeKeys = ['home', 'away', 'draw'];
+		} else if (lineType === 'total') {
+			if (!priceOver || !priceUnder) {
+				throw new Error('Missing prices for total');
+			}
+			odds = [
+				parseOdd(priceOver, 'priceOver'),
+				parseOdd(priceUnder, 'priceUnder'),
+			];
+			outcomeKeys = ['over', 'under'];
+		} else if (lineType === 'spread') {
+			if (!priceHome || !priceAway) {
+				throw new Error('Missing prices for spread');
+			}
+			odds = [
+				parseOdd(priceHome, 'priceHome'),
+				parseOdd(priceAway, 'priceAway'),
+			];
+			outcomeKeys = ['home', 'away'];
+		} else {
+			throw new Error(`Unsupported line type: ${lineType}`);
+		}
 
-        // Calculate implied probabilities and total
-        const impliedProbs = odds.map((odd) => 1 / odd);
-        const totalProb = impliedProbs.reduce((sum, p) => sum + p, 0);
+		// Calculate implied probabilities and total
+		const impliedProbs = odds.map((odd) => 1 / odd);
+		const totalProb = impliedProbs.reduce((sum, p) => sum + p, 0);
 
-        if (totalProb <= 0) {
-            throw new Error('Total probability is not positive');
-        }
+		if (totalProb <= 0) {
+			throw new Error('Total probability is not positive');
+		}
 
-        // Calculate true odds with rounding for consistency
-        const trueOdds = {};
-        outcomeKeys.forEach((key, i) => {
-            trueOdds[key] = Number((1 / (impliedProbs[i] / totalProb)).toFixed(2));
-        });
+		// Calculate true odds with rounding for consistency
+		const trueOdds = {};
+		outcomeKeys.forEach((key, i) => {
+			trueOdds[key] = Number((1 / (impliedProbs[i] / totalProb)).toFixed(2));
+		});
 
-        return trueOdds;
-    } catch (error) {
-        console.error('[Bot] Error during devigging calculation:', error.message);
-        return null;
-    }
+		return trueOdds;
+	} catch (error) {
+		console.error('[Bot] Error during devigging calculation:', error.message);
+		return null;
+	}
 }
 
 export function getPollingStatus() {

@@ -2,28 +2,26 @@ import fs from 'fs/promises';
 import path from 'path';
 import { getBookmakerIntegration } from './bookmakers/index.js';
 import { devigOdds } from './provider.service.js';
-const CORRELATED_DUMP_PATH = path.join(process.cwd(), 'data', 'correlated_matches.json');
 import chalk from 'chalk';
 import { AuthenticationError } from '../core/errors.js';
 
 const gameQueue = [];
 let isWorkerRunning = false;
+const DELAY_INTERVAL_S = 5;
+const CORRELATED_DUMP_PATH = path.join(process.cwd(), 'data', 'correlated_matches.json');
 
 async function saveSuccessfulMatch(matchData, providerData) {
 	try {
-		let existingData = [];
-		try {
-			const fileContent = await fs.readFile(CORRELATED_DUMP_PATH, 'utf-8');
-			existingData = JSON.parse(fileContent);
-		} catch (readError) { /* File doesn't exist yet, which is fine. */ }
-
+		// Ensure the data/ directory exists
+		const dir = path.dirname(CORRELATED_DUMP_PATH);
+		await fs.mkdir(dir, { recursive: true });
 		const comprehensiveData = { providerData: providerData, bookmakerMatch: matchData };
-		existingData.push(comprehensiveData);
-		await fs.writeFile(CORRELATED_DUMP_PATH, JSON.stringify(existingData, null, 2));
-		console.log(`[Bot]   => Success! Saved correlated match ${matchData.EventName} to file.`);
 
+		// Overwrite file with new data
+		await fs.writeFile(CORRELATED_DUMP_PATH, JSON.stringify(comprehensiveData, null, 2));
+		console.log(`[Bot] Success: Overwrote ${CORRELATED_DUMP_PATH} with match ${minimalMatchData.EventName} in ${Date.now() - startTime}ms`);
 	} catch (error) {
-		console.error('[Bot] Error saving successful match to dump file:', error);
+		console.error(`[Bot] Error writing to ${CORRELATED_DUMP_PATH}:`, error.message);
 	}
 }
 
@@ -305,8 +303,7 @@ async function processQueue() {
 			console.error(`[Bot] Error processing provider data ${providerData.id}:`, error);
 		} finally {
 			// Add a delay between processing each item
-			const delaySeconds = 1;
-			await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
+			await new Promise(resolve => setTimeout(resolve, DELAY_INTERVAL_S * 1000));
 		}
 	}
 	isWorkerRunning = false;

@@ -23,9 +23,9 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Include data/logs and data/cookies directories, but not their files
+data/provider_dump.json
 data/logs/*
 data/cookies/*
+!data/.gitkeep
 !data/logs/.gitkeep
 !data/cookies/.gitkeep
-
