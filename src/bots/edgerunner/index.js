@@ -77,6 +77,12 @@ class EdgeRunner {
 			throw error;
 		}
 	}
+	#sendLog(message) {
+		// process.send is only available when running as a forked child process
+		if (process.send) {
+			process.send({ type: 'log', message });
+		}
+	}
 
 	async #saveSuccessfulMatch(matchData, providerData) {
 		if (this.config.bookmaker.storeData) {
@@ -347,6 +353,8 @@ class EdgeRunner {
 				}
 
 				console.log(chalk.greenBright(`[Edgerunner] Found ${valueBets.length} value opportunities.`));
+				this.#sendLog(`[Edgerunner] Found ${valueBets.length} value opportunities.`);
+				this.#sendLog(JSON.stringify(valueBets));
 
 				for (const valueBet of valueBets) {
 					const stakeAmount = this.edgerunnerConf.fixedStake.enabled
@@ -355,14 +363,18 @@ class EdgeRunner {
 
 					if (stakeAmount > 0) {
 						const summary = {
-							match: detailedBookmakerData.name,
-							market: valueBet.market.name,
-							selection: valueBet.selection.name,
-							odds: valueBet.selection.odd.value,
-							stake: stakeAmount,
-							value: `${valueBet.value.toFixed(2)}%`
+							type: 'bet', 
+							data: {
+								match: detailedBookmakerData.name,
+								market: valueBet.market.name,
+								selection: valueBet.selection.name,
+								odds: valueBet.selection.odd.value,
+								stake: stakeAmount,
+								value: `${valueBet.value.toFixed(2)}%`
+							}
 						};
-						console.log(chalk.greenBright('[Edgerunner] Placing Bet:'), summary);
+						console.log(chalk.greenBright('[Edgerunner] Placing Bet:'), summary.data);
+						this.#sendLog(JSON.stringify(summary));
 
 						try {
 							const betPayload = this.bookmaker.constructBetPayload(
@@ -448,6 +460,7 @@ class EdgeRunner {
 		this.#gameQueue.length = 0;
 		this.#processedEventIds.clear();
 		if (this.browser) {
+			this.#sendLog("Bot Stopped");
 			console.log('[Browser] Closing browser instance');
 			await this.browser.close();
 			this.browser = null;
@@ -460,7 +473,6 @@ class EdgeRunner {
 			bankroll: this.bankroll,
 			queueLength: this.#gameQueue.length,
 			isWorkerRunning: this.#isWorkerRunning,
-			browserActive: !!this.browser
 		};
 	}
 }

@@ -4,13 +4,13 @@ import path from "path";
 import { fileURLToPath } from "url";
 import configurations from "../../configurations/index.js";
 import { createEdgeRunnerConfig } from "../bots/edgerunner/helper.js";
+import { client } from "../server.js";
+import { ChannelType } from "discord.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Map to store child processes: { botId: ChildProcess }
 const bots = new Map();
-
-const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
 export async function startBot(req, res) {
 	const maxAllowedBots = parseInt(configurations.MAX_EDGERUNNER_INSTANCES) || 1;
@@ -20,15 +20,15 @@ export async function startBot(req, res) {
 	}
 
 	const config = createEdgeRunnerConfig(req.body);
-	// Validation: just ensure required fields exist
 	if (!config.provider.userId || !config.bookmaker.username || !config.bookmaker.password) {
 		return res.status(400).json({ error: "Missing required fields: userId, username, password" });
 	}
 
-	const botId = generateId();
+	const botId = config.bookmaker.username;
 	const configPath = path.join(__dirname, `../../data/edgerunner/${botId}.json`);
 
 	try {
+		// check for duplicates
 		const configDir = path.join(__dirname, '../../data/edgerunner');
 		const existingConfigs = await fs.readdir(configDir).catch(() => []);
 		for (const file of existingConfigs) {
@@ -40,6 +40,20 @@ export async function startBot(req, res) {
 			}
 		}
 
+		// create dedicated channel
+		const guild = await client.guilds.fetch(configurations.DISCORD_GUILD_ID);
+		const category = await guild.channels.fetch(configurations.DISCORD_BOTS_CATEGORY_ID);
+
+		const channel = await guild.channels.create({
+			name: `bot-${botId}`,
+			type: ChannelType.GuildText,
+			parent: category,
+			topic: `Logs and status for bot running on account ${botId}.`
+		});
+
+		console.log(`[Discord] Created channel #${channel.name} for bot ${botId}`);
+		config.discordChannelId = channel.id;
+
 		// Save config
 		await fs.mkdir(configDir, { recursive: true });
 		await fs.writeFile(configPath, JSON.stringify(config, null, 2));
@@ -49,6 +63,21 @@ export async function startBot(req, res) {
 		const child = fork(path.join(__dirname, "../bots/edgerunner/instance.js"), [], {
 			env: { CONFIG_PATH: configPath },
 			stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+		});
+
+		// Listen for 'log' messages from the child process
+		child.on('message', async (msg) => {
+			if (msg.type.toLowerCase() === 'log' && msg.message) {
+				try {
+					// Fetch the channel using the ID we saved and send the message
+					const logChannel = await client.channels.fetch(config.discordChannelId);
+					if (logChannel) {
+						await logChannel.send(msg.message);
+					}
+				} catch (err) {
+					console.error(`[Bot ${botId}] Failed to send log to Discord channel:`, err);
+				}
+			}
 		});
 
 		child.stdout.on('data', (data) => console.log(`[Bot ${botId}] stdout: ${data.toString().trim()}`));
@@ -71,22 +100,32 @@ export async function startBot(req, res) {
 
 export async function updateConfig(req, res) {
 	const pm_id = req.params.id;
-	const { fixedStake, stakeFraction, minValueBetPercentage } = req.body;
+	const partialConfig = req.body;
+	const configPath = path.join(__dirname, `../../data/edgerunner/${pm_id}.json`);
+
 	try {
 		const child = bots.get(pm_id);
 		if (!child) {
-			return res.status(400).json({ error: "Bot not found" });
+			return res.status(404).json({ error: "Bot not found" });
 		}
+
+		const existingConfig = JSON.parse(await fs.readFile(configPath, 'utf8'));
+		const updatedConfig = createEdgeRunnerConfig({ ...existingConfig, ...partialConfig });
+
+		await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2));
+		console.log(`[Bot ${pm_id}] Config updated and saved to ${configPath}`);
+
 		await new Promise((resolve, reject) => {
-			child.send({ type: 'config', data: { config: { fixedStake, stakeFraction, minValueBetPercentage } } }, (err) => {
+			child.send({ type: 'config', data: { config: partialConfig.edgerunner } }, (err) => {
 				if (err) return reject(err);
 				resolve();
 			});
 		});
+
 		res.json({ message: "Bot configuration updated", pm_id });
 	} catch (error) {
 		console.error('[Bot] Failed to update configuration:', error);
-		res.status(400).json({ error: "Invalid configuration update" });
+		res.status(500).json({ error: "Failed to update configuration" });
 	}
 }
 

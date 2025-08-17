@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import configurations from "../../../../configurations/index.js";
 
 const apiBase = `${configurations.apiBaseUrl}/edgerunner`;
@@ -23,9 +23,9 @@ export default
 			.addNumberOption(option =>
 				option.setName("fixedstake")
 					.setDescription("Fixed stake value")
-					.setRequired(false)),
+					.setRequired(true)),
 		async execute(interaction) {
-			await interaction.deferReply({ ephemeral: true });
+			await interaction.deferReply({ ephemeral: MessageFlags.Ephemeral });
 
 			const username = interaction.options.getString("username");
 			const password = interaction.options.getString("password");

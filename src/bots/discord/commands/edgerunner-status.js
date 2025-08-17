@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import configurations from "../../../../configurations/index.js";
 
 const apiBase = `${configurations.apiBaseUrl}/edgerunner`;
@@ -8,10 +8,10 @@ export default
 		data: new SlashCommandBuilder()
 			.setName("runner-status")
 			.setDescription("Get status of a bot")
-			.addStringOption(opt => opt.setName("id").setDescription("Bot ID").setRequired(true)),
+			.addStringOption(opt => opt.setName("username").setDescription("The boookmaker account username of the bot to stop").setRequired(true)),
 		async execute(interaction) {
-			await interaction.deferReply({ ephemeral: true });
-			const pm_id = interaction.options.getString("id");
+			await interaction.deferReply({ ephemeral: MessageFlags.Ephemeral });
+			const pm_id = interaction.options.getString("username");
 			try {
 				const response = await fetch(`${apiBase}/status/${pm_id}`);
 				const result = await response.json();

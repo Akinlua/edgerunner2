@@ -44,9 +44,9 @@ async function cleanupOldConfigs() {
 }
 
 // Initializes and starts the Discord bot client.
+export const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 async function startDiscordBot() {
 	console.log('[Discord] Initializing Discord Bot...');
-	const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 	client.once(Events.ClientReady, (readyClient) => {
 		console.log(`[Discord] Logged in as ${readyClient.user.tag}`);
