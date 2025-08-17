@@ -19,34 +19,56 @@ class BetKingBookmaker {
 
 		this.lineTypeMapper = {
 			"money_line": {
-				name: "1x2",
-				outcome: { "home": "1", "draw": "x", "away": "2" }
+				name: "money_line",
+				sport: {
+					// '1': { '*': { label: "1X2", outcome: { home: "1", draw: "X", away: "2" } } },
+					'1': { '*': { label: "1X2", outcome: { home: "1", away: "2" } } },
+					'3': { '*': { label: "Moneyline", outcome: { home: "1", away: "2" } } }
+				}
 			},
-			"total": {
-				name: "Total",
-				outcome: { "over": "Over", "under": "Under" },
-				marketsBySport: {
-					'1': { '0': 'Total Goals' }, // Football
-					'3': { // Basketball
-						'0': 'Total (Incl. Overtime)', // Full game
-						'1': null,
-						'2': null
-					},
-				},
+			"totals": {
+				name: "total",
+				sport: {
+					'1': { '*': { label: 'Total Goals', outcome: { over: "Over", under: "Under" } } },
+					'3': { '*': { label: 'Total (Incl. Overtime)', outcome: { over: "Over", under: "Under" } } }
+				}
 			},
-			"spread": {
-				name: "Handicap",
-				outcome: { "home": "Home", "away": "Away" },
-				marketsBySport: {
-					'1': { '0': 'Handicap' }, // Football
-					'3': { // Basketball
-						'0': 'Handicap (Incl. Overtime)', // Full game
-						'1': null,
-						'2': null
+			"spreads": {
+				name: "handicap",
+				sport: {
+					'1': {
+						'*': { label: 'Handicap', outcome: { home: "Home", away: "Away" } },
+						bridge: {
+							"-3.0": "0 : 3",
+							"-2.0": "0 : 2",
+							"-1.0": "0 : 1",
+							specials: {
+								"0.0": { name: "Draw No Bet", outcome: { home: "1 DNB", away: "2 DNB" } },
+								"0.5": { name: "Double Chance", outcome: { home: "1X", away: "X2" } },
+								"-0.5": { name: "1X2", outcome: { home: "1", away: "2" } }
+							}
+						}
 					},
-				},
+					'3': {
+						'*': { label: 'Handicap (Incl. Overtime)', outcome: { home: "1 AH", away: "2 AH" } },
+						bridge: {
+							"-7.5": "0 : 7.5", "-7.0": "0 : 7", "-6.5": "0 : 6.5", "-6.0": "0 : 6",
+							"-5.5": "0 : 5.5", "-5.0": "0 : 5", "-4.5": "0 : 4.5", "-4.0": "0 : 4",
+							"-3.5": "0 : 3.5", "-3.0": "0 : 3", "-2.5": "0 : 2.5", "-2.0": "0 : 2",
+							"-1.5": "0 : 1.5", "-1.0": "0 : 1",
+						}
+					}
+				}
+			},
+			"team_total": {
+				name: "team total",
+				sport: {
+					'1': { '*': { label: 'Team Total Goals', outcome: { home: "Home", away: "Away" } } },
+					'3': { '*': { label: 'Team Total (Incl. Overtime)', outcome: { home: "Home", away: "Away" } } }
+				}
 			}
 		};
+
 	}
 
 	#loadCookies = async (username) => {
@@ -232,15 +254,15 @@ class BetKingBookmaker {
 		}
 	}
 
-	async verifyMatch(bookmakerMatch, providerData) {
-		if (!providerData.starts || !bookmakerMatch.date) {
+	async verifyMatch(timeA, timeB) {
+		if (!timeA || !timeB) {
 			console.error('[Bot] Missing date information for verification.');
 			return false;
 		}
 
 		try {
-			const providerDate = new Date(parseInt(providerData.starts, 10));
-			const bookmakerDate = new Date(bookmakerMatch.date);
+			const bookmakerDate = new Date(timeA);
+			const providerDate = new Date(parseInt(timeB, 10));
 			const fiveMinutesInMs = 5 * 60 * 1000;
 			const timeDifference = Math.abs(providerDate.getTime() - bookmakerDate.getTime());
 
@@ -696,129 +718,249 @@ class BetKingBookmaker {
 		};
 	}
 
-	translateProviderData(providerData) {
-		const mapping = this.lineTypeMapper[providerData.lineType];
+	// translateProviderData(providerData) {
+	// 	const mapping = this.lineTypeMapper[providerData.lineType];
+	// 	if (!mapping) {
+	// 		console.log(`[Bot - BOOKMAKER] Unsupported line type: ${providerData.lineType}`);
+	// 		return null;
+	// 	}
+	//
+	// 	const providerOutcomeKey = providerData.outcome.toLowerCase();
+	// 	const selectionName = mapping.outcome[providerOutcomeKey];
+	// 	if (!selectionName) {
+	// 		console.error(`[Bot] Unknown outcome: ${providerData.outcome} for line type ${providerData.lineType}`);
+	// 		return null;
+	// 	}
+	//
+	// 	const providerOutcomeName = `price${providerOutcomeKey.charAt(0).toUpperCase() + providerOutcomeKey.slice(1)}`;
+	// 	const odds = providerData[providerOutcomeName];
+	// 	if (!odds || isNaN(parseFloat(odds))) {
+	// 		console.error(`[Bot] Invalid odds for outcome: ${providerOutcomeKey}`);
+	// 		return null;
+	// 	}
+	//
+	// 	if (providerData.sportId === '1') {
+	// 		const sportMarkets = mapping.marketsBySport?.['1'] || {
+	// 			'0': providerData.lineType === 'total' ? 'Total Goals' : 'Handicap'
+	// 		};
+	// 		const marketName = providerData.lineType === 'total' ? sportMarkets['0'] : mapping.name;
+	// 		let betkingMarketName = providerData.lineType === 'total' ? `${marketName} ${providerData.points}` : marketName;
+	// 		let betkingSelectionName = selectionName;
+	// 		let betkingSpecialValue = providerData.lineType === 'total' ? providerData.points : null;
+	//
+	// 		if (providerData.lineType === 'spread') {
+	// 			const points = parseFloat(providerData.points);
+	// 			if (!isNaN(points)) {
+	// 				if (points === 0) {
+	// 					betkingMarketName = 'Draw No Bet';
+	// 					betkingSelectionName = providerOutcomeKey === 'home' ? '1 DNB' : '2 DNB';
+	// 					betkingSpecialValue = '0';
+	// 				} else if (points === 0.5) {
+	// 					betkingMarketName = 'Double Chance';
+	// 					betkingSelectionName = providerOutcomeKey === 'home' ? '1X' : 'X2';
+	// 					betkingSpecialValue = '0';
+	// 				} else {
+	// 					if (Number.isInteger(points)) {
+	// 						if (providerOutcomeKey === 'home') {
+	// 							betkingSpecialValue = points < 0 ? `0:${-points}` : `${points}:0`;
+	// 							betkingSelectionName = 'Home';
+	// 						} else {
+	// 							betkingSpecialValue = points < 0 ? `${-points}:0` : `0:${points}`;
+	// 							betkingSelectionName = 'Away';
+	// 						}
+	// 						betkingMarketName = `Handicap ${points}`;
+	// 					} else {
+	// 						console.log(`[Bot] Quarter-goal handicap (${points}) not supported yet.`);
+	// 						return null;
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	//
+	// 		return {
+	// 			marketName: betkingMarketName,
+	// 			selectionName: betkingSelectionName,
+	// 			points: providerData.points,
+	// 			specialValue: betkingSpecialValue,
+	// 			odds
+	// 		};
+	// 	}
+	// 	else if (providerData.sportId === '3') {
+	// 		if (!['total', 'spread'].includes(providerData.lineType)) {
+	// 			console.log(`[Bot] Unsupported basketball line type: ${providerData.lineType}. Only total and spread bets supported.`);
+	// 			return null;
+	// 		}
+	//
+	// 		const sportMarkets = mapping.marketsBySport?.['3'] || {
+	// 			'0': providerData.lineType === 'total' ? 'Total (Incl. Overtime)' : 'Handicap (Incl. Overtime)'
+	// 		};
+	// 		const periodNumber = providerData.periodNumber || '0';
+	// 		if (periodNumber !== '0') {
+	// 			console.log(`[Bot] Unsupported basketball period: ${periodNumber}. Only full-game (period 0) supported.`);
+	// 			return null;
+	// 		}
+	// 		let betkingMarketName = providerData.lineType === 'total' ? `${sportMarkets[periodNumber]} ${providerData.points}` : sportMarkets[periodNumber];
+	// 		let betkingSelectionName = selectionName;
+	// 		let betkingSpecialValue = providerData.lineType === 'total' ? providerData.points : null;
+	//
+	// 		if (providerData.lineType === 'spread') {
+	// 			const points = parseFloat(providerData.points);
+	// 			if (!isNaN(points)) {
+	// 				if (points === 0) {
+	// 					betkingMarketName = 'DNB RT';
+	// 					betkingSelectionName = providerOutcomeKey === 'home' ? '1 DNB' : '2 DNB';
+	// 					betkingSpecialValue = '0';
+	// 				} else {
+	// 					betkingMarketName = `Handicap (Incl. Overtime) ${points}`;
+	// 					if (providerOutcomeKey === 'home') {
+	// 						betkingSpecialValue = points < 0 ? `0 : ${Math.abs(points)}` : `${Math.abs(points)} : 0`;
+	// 						betkingSelectionName = '1 AH';
+	// 					} else {
+	// 						betkingSpecialValue = points < 0 ? `${Math.abs(points)} : 0` : `0 : ${Math.abs(points)}`;
+	// 						betkingSelectionName = '2 AH';
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	//
+	// 		return {
+	// 			marketName: betkingMarketName,
+	// 			selectionName: betkingSelectionName,
+	// 			points: providerData.points,
+	// 			periodNumber: periodNumber,
+	// 			specialValue: betkingSpecialValue,
+	// 			odds
+	// 		};
+	// 	}
+	//
+	// 	console.log(`[Bot] Unsupported sportId: ${providerData.sportId}. Using generic mapping.`);
+	// 	return {
+	// 		marketName: mapping.name,
+	// 		selectionName: selectionName,
+	// 		points: providerData.points,
+	// 		odds: odds,
+	// 	};
+	// }
+	translateProviderData({ lineType, outcome, sportId, points, periodNumber, odds }) {
+		const mapping = this.lineTypeMapper[lineType];
 		if (!mapping) {
-			console.log(`[Bot - BOOKMAKER] Unsupported line type: ${providerData.lineType}`);
+			console.log(`[Bot - BOOKMAKER] Unsupported line type: ${lineType}`);
 			return null;
 		}
 
-		const providerOutcomeKey = providerData.outcome.toLowerCase();
+		const providerOutcomeKey = outcome.toLowerCase();
 		const selectionName = mapping.outcome[providerOutcomeKey];
 		if (!selectionName) {
-			console.error(`[Bot] Unknown outcome: ${providerData.outcome} for line type ${providerData.lineType}`);
+			console.error(`[Bot] Unknown outcome: ${outcome} for line type ${lineType}`);
 			return null;
 		}
 
-		const providerOutcomeName = `price${providerOutcomeKey.charAt(0).toUpperCase() + providerOutcomeKey.slice(1)}`;
-		const odds = providerData[providerOutcomeName];
 		if (!odds || isNaN(parseFloat(odds))) {
 			console.error(`[Bot] Invalid odds for outcome: ${providerOutcomeKey}`);
 			return null;
 		}
 
-		if (providerData.sportId === '1') {
+		if (sportId === '1') {
 			const sportMarkets = mapping.marketsBySport?.['1'] || {
-				'0': providerData.lineType === 'total' ? 'Total Goals' : 'Handicap'
+				'0': lineType === 'total' ? 'Total Goals' : 'Handicap'
 			};
-			const marketName = providerData.lineType === 'total' ? sportMarkets['0'] : mapping.name;
-			let betkingMarketName = providerData.lineType === 'total' ? `${marketName} ${providerData.points}` : marketName;
+			const marketName = lineType === 'total' ? sportMarkets['0'] : mapping.name;
+			let betkingMarketName = lineType === 'total' ? `${marketName} ${points}` : marketName;
 			let betkingSelectionName = selectionName;
-			let betkingSpecialValue = providerData.lineType === 'total' ? providerData.points : null;
+			let betkingSpecialValue = lineType === 'total' ? points : null;
 
-			if (providerData.lineType === 'spread') {
-				const points = parseFloat(providerData.points);
-				if (!isNaN(points)) {
-					if (points === 0) {
+			if (lineType === 'spread') {
+				const parsedPoints = parseFloat(points);
+				if (!isNaN(parsedPoints)) {
+					if (parsedPoints === 0) {
 						betkingMarketName = 'Draw No Bet';
 						betkingSelectionName = providerOutcomeKey === 'home' ? '1 DNB' : '2 DNB';
 						betkingSpecialValue = '0';
-					} else if (points === 0.5) {
+					} else if (parsedPoints === 0.5) {
 						betkingMarketName = 'Double Chance';
 						betkingSelectionName = providerOutcomeKey === 'home' ? '1X' : 'X2';
 						betkingSpecialValue = '0';
 					} else {
-						if (Number.isInteger(points)) {
+						if (Number.isInteger(parsedPoints)) {
 							if (providerOutcomeKey === 'home') {
-								betkingSpecialValue = points < 0 ? `0:${-points}` : `${points}:0`;
+								betkingSpecialValue = parsedPoints < 0 ? `0:${-parsedPoints}` : `${parsedPoints}:0`;
 								betkingSelectionName = 'Home';
 							} else {
-								betkingSpecialValue = points < 0 ? `${-points}:0` : `0:${points}`;
+								betkingSpecialValue = parsedPoints < 0 ? `${-parsedPoints}:0` : `0:${parsedPoints}`;
 								betkingSelectionName = 'Away';
 							}
-							betkingMarketName = `Handicap ${points}`;
+							betkingMarketName = `Handicap ${parsedPoints}`;
 						} else {
-							console.log(`[Bot] Quarter-goal handicap (${points}) not supported yet.`);
+							console.log(`[Bot] Quarter-goal handicap (${parsedPoints}) not supported yet.`);
 							return null;
 						}
 					}
 				}
 			}
 
-			console.log(`[Bot] Translated Football: Sport=${providerData.sportId}, LineType=${providerData.lineType}, Outcome=${providerOutcomeKey}, Points=${providerData.points || 'N/A'}, Market=${betkingMarketName}, Selection=${betkingSelectionName}, Odds=${odds}`);
+			console.log(`[Bot] Translated Football: Sport=${sportId}, LineType=${lineType}, Outcome=${providerOutcomeKey}, Points=${points || 'N/A'}, Market=${betkingMarketName}, Selection=${betkingSelectionName}, Odds=${odds}`);
 			return {
 				marketName: betkingMarketName,
 				selectionName: betkingSelectionName,
-				points: providerData.points,
+				points,
 				specialValue: betkingSpecialValue,
 				odds
 			};
-		}
-		else if (providerData.sportId === '3') {
-			if (!['total', 'spread'].includes(providerData.lineType)) {
-				console.log(`[Bot] Unsupported basketball line type: ${providerData.lineType}. Only total and spread bets supported.`);
+		} else if (sportId === '3') {
+			if (!['total', 'spread'].includes(lineType)) {
+				console.log(`[Bot] Unsupported basketball line type: ${lineType}. Only total and spread bets supported.`);
 				return null;
 			}
 
 			const sportMarkets = mapping.marketsBySport?.['3'] || {
-				'0': providerData.lineType === 'total' ? 'Total (Incl. Overtime)' : 'Handicap (Incl. Overtime)'
+				'0': lineType === 'total' ? 'Total (Incl. Overtime)' : 'Handicap (Incl. Overtime)'
 			};
-			const periodNumber = providerData.periodNumber || '0';
-			if (periodNumber !== '0') {
-				console.log(`[Bot] Unsupported basketball period: ${periodNumber}. Only full-game (period 0) supported.`);
+			const effectivePeriod = periodNumber || '0';
+			if (effectivePeriod !== '0') {
+				console.log(`[Bot] Unsupported basketball period: ${effectivePeriod}. Only full-game (period 0) supported.`);
 				return null;
 			}
-			let betkingMarketName = providerData.lineType === 'total' ? `${sportMarkets[periodNumber]} ${providerData.points}` : sportMarkets[periodNumber];
+			let betkingMarketName = lineType === 'total' ? `${sportMarkets[effectivePeriod]} ${points}` : sportMarkets[effectivePeriod];
 			let betkingSelectionName = selectionName;
-			let betkingSpecialValue = providerData.lineType === 'total' ? providerData.points : null;
+			let betkingSpecialValue = lineType === 'total' ? points : null;
 
-			if (providerData.lineType === 'spread') {
-				const points = parseFloat(providerData.points);
-				if (!isNaN(points)) {
-					if (points === 0) {
+			if (lineType === 'spread') {
+				const parsedPoints = parseFloat(points);
+				if (!isNaN(parsedPoints)) {
+					if (parsedPoints === 0) {
 						betkingMarketName = 'DNB RT';
 						betkingSelectionName = providerOutcomeKey === 'home' ? '1 DNB' : '2 DNB';
 						betkingSpecialValue = '0';
 					} else {
-						betkingMarketName = `Handicap (Incl. Overtime) ${points}`;
+						betkingMarketName = `Handicap (Incl. Overtime) ${parsedPoints}`;
 						if (providerOutcomeKey === 'home') {
-							betkingSpecialValue = points < 0 ? `0 : ${Math.abs(points)}` : `${Math.abs(points)} : 0`;
+							betkingSpecialValue = parsedPoints < 0 ? `0 : ${Math.abs(parsedPoints)}` : `${Math.abs(parsedPoints)} : 0`;
 							betkingSelectionName = '1 AH';
 						} else {
-							betkingSpecialValue = points < 0 ? `${Math.abs(points)} : 0` : `0 : ${Math.abs(points)}`;
+							betkingSpecialValue = parsedPoints < 0 ? `${Math.abs(parsedPoints)} : 0` : `0 : ${Math.abs(parsedPoints)}`;
 							betkingSelectionName = '2 AH';
 						}
 					}
 				}
 			}
 
-			console.log(`[Bot] Translated Basketball: Sport=${providerData.sportId}, LineType=${providerData.lineType}, Period=${periodNumber}, Outcome=${providerOutcomeKey}, Points=${providerData.points || 'N/A'}, Market=${betkingMarketName}, Selection=${betkingSelectionName}, Odds=${odds}`);
+			console.log(`[Bot] Translated Basketball: Sport=${sportId}, LineType=${lineType}, Period=${effectivePeriod}, Outcome=${providerOutcomeKey}, Points=${points || 'N/A'}, Market=${betkingMarketName}, Selection=${betkingSelectionName}, Odds=${odds}`);
 			return {
 				marketName: betkingMarketName,
 				selectionName: betkingSelectionName,
-				points: providerData.points,
-				periodNumber: periodNumber,
+				points,
+				periodNumber: effectivePeriod,
 				specialValue: betkingSpecialValue,
 				odds
 			};
 		}
 
-		console.log(`[Bot] Unsupported sportId: ${providerData.sportId}. Using generic mapping.`);
+		console.log(`[Bot] Unsupported sportId: ${sportId}. Using generic mapping.`);
 		return {
 			marketName: mapping.name,
-			selectionName: selectionName,
-			points: providerData.points,
-			odds: odds,
+			selectionName,
+			points,
+			odds
 		};
 	}
 }

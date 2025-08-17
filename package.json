@@ -8,8 +8,9 @@
     "dev": "NODE_ENV=development node --watch-path=./src src/server.js",
     "postinstall": "npx puppeteer browsers install chrome",
     "test": "node --test test/unit",
-    "test:betking": "node --test test/unit/bookmakers/integrations/betking.test.js",
-    "test:bot": "node --test test/unit/bot.test.js"
+    "test:betking": "node --test test/unit/bookmakers/betking.js",
+    "test:pinnacle": "node --test test/unit/providers/pinnacle.js",
+    "test:edgerunner": "node --test test/unit/edgerunner/index.js"
   },
   "keywords": [],
   "author": "",
@@ -17,14 +18,12 @@
   "description": "",
   "dependencies": {
     "chalk": "^5.4.1",
-    "crawlee": "^3.13.8",
     "discord.js": "^14.21.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "fuse.js": "^7.1.0",
     "morgan": "^1.10.0",
     "node-cron": "^4.2.1",
-    "pm2": "^6.0.8",
     "puppeteer": "^24.10.2",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"

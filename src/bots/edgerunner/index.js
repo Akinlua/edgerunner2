@@ -6,36 +6,42 @@ import { getBookmakerInterface } from '../../interfaces/bookmakers/index.js';
 import { getProviderInterface } from '../../interfaces/providers/index.js';
 import chalk from 'chalk';
 import { AuthenticationError } from '../../core/errors.js';
-import configurations from '../../configurations/index.js';
 
 puppeteer.use(stealthPlugin());
 
 class EdgeRunner {
 	#gameQueue = [];
-	#seenGameIds = new Set();
+	#processedEventIds = new Set();
 	#isWorkerRunning = false;
 	#CORRELATED_DUMP_PATH = path.join(process.cwd(), 'data', 'correlated_matches.json');
 
-	constructor(config) {
+	constructor(config, browser, bookmaker) {
 		this.config = config;
+		this.bankroll = null;
 		this.username = config.bookmaker.username;
 		this.password = config.bookmaker.password;
+		this.browser = browser;
+		this.bookmaker = bookmaker;
 		this.provider = getProviderInterface(config.provider.name, config.provider);
-		this.edgeRunner = config.edgeRunner;
-		this.bankroll = null;
+		this.edgerunnerConf = config.edgerunner;
 	}
 
-	async initialize() {
+	static async create(config) {
+		if (!config) {
+			throw new Error("Configuration object is missing.");
+		}
 		try {
-			this.browser = await this.#initializeBrowser();
-			this.bookmaker = getBookmakerInterface(this.config.bookmaker.name, this.config.bookmaker, this.browser);
+			const browser = await this.#initializeBrowser();
+			const bookmaker = getBookmakerInterface(config.bookmaker.name, config.bookmaker, browser);
+
+			return new EdgeRunner(config, browser, bookmaker);
 		} catch (error) {
-			console.error(chalk.red('[EdgeRunner] Failed to initialize:', error));
+			console.error(chalk.red('[EdgeRunner] Failed to create instance:', error));
 			throw error;
 		}
 	}
 
-	async #initializeBrowser() {
+	static async #initializeBrowser() {
 		if (this.browser && this.bookmaker) {
 			console.log(chalk.yellow('[EdgeRunner] Already initialized, skipping.'));
 			return;
@@ -73,7 +79,7 @@ class EdgeRunner {
 	}
 
 	async #saveSuccessfulMatch(matchData, providerData) {
-		if (configurations.bookmaker.storeData) {
+		if (this.config.bookmaker.storeData) {
 			try {
 				const dir = path.dirname(this.#CORRELATED_DUMP_PATH);
 				await fs.mkdir(dir, { recursive: true });
@@ -96,119 +102,152 @@ class EdgeRunner {
 			return 0;
 		}
 
-		const stakeFraction = this.edgeRunner.stakeFraction || 0.1;
+		const stakeFraction = this.edgerunnerConf.stakeFraction || 0.1;
 		const fullStake = bankroll * (numerator / b);
 		const finalStake = Math.floor((fullStake * stakeFraction) * 100) / 100;
 
 		return finalStake;
 	}
 
-	async #evaluateBettingOpportunity(matchData, providerData) {
+	async evaluateMarket(bookmakerMarkets, providerMarkets) {
 		try {
-			const translatedData = this.bookmaker.translateProviderData(providerData);
-
-			if (!translatedData) {
-				console.log(`[Edgerunner] Could not translate provider data for ${providerData.lineType}`);
-				return null;
+			const groupedMatches = this.bridgeMarket(bookmakerMarkets, providerMarkets);
+			if (!groupedMatches || Object.keys(groupedMatches).length === 0) {
+				console.log('[Edgerunner] No matching markets found.');
+				return [];
 			}
 
-			console.log(chalk.yellow("translated data", JSON.stringify(translatedData)));
+			const valueBets = [];
 
-			const calculateValue = (selection, providerData) => {
-				const outcomeKey = providerData.outcome.toLowerCase();
-				const trueOdd = this.provider.devigOdds(providerData)?.[outcomeKey];
-				const fallbackOddsKey = `price${outcomeKey.charAt(0).toUpperCase() + outcomeKey.slice(1)}`;
-				const originalOdd = parseFloat(providerData[fallbackOddsKey]);
-				const oddsToUse = trueOdd || originalOdd;
-
-				if (!oddsToUse || isNaN(oddsToUse)) {
-					console.error(`[Edgerunner] Could not find valid odds for outcome: ${outcomeKey}`);
-					return null;
-				}
-
-				console.log(chalk.cyan(`Using odds: ${oddsToUse.toFixed(2)} (${trueOdd ? 'No-Vig' : 'Original'})`));
-
-				const value = (selection.odd.value / oddsToUse - 1) * 100;
-
-				return {
-					value: value,
-					trueOdd: oddsToUse,
-					bookmakerOdds: selection.odd.value
-				};
+			const calculateValue = (matchedBet) => {
+				const { bookmaker, provider } = matchedBet;
+				const data = provider.fullLineData;
+				const nonOddKeys = new Set(['lineType', 'points', 'hdp', 'alt_line_id', 'max']);
+				const { outcomeKeys, oddsArray } = Object.entries(data).reduce((acc, [key, value]) => {
+					if (!nonOddKeys.has(key) && typeof value === 'number') {
+						acc.outcomeKeys.push(key);
+						acc.oddsArray.push(value);
+					}
+					return acc;
+				}, { outcomeKeys: [], oddsArray: [] });
+				if (oddsArray.length < 2) return { ...matchedBet, value: -Infinity };
+				const noVigOddsArray = this.provider.devigOdds(oddsArray);
+				if (!noVigOddsArray) return { ...matchedBet, value: -Infinity };
+				const noVigOdds = Object.fromEntries(outcomeKeys.map((key, i) => [key, noVigOddsArray[i]]));
+				const trueOdd = noVigOdds[provider.matchedOutcome.name];
+				if (!trueOdd) return { ...matchedBet, value: -Infinity };
+				const value = (bookmaker.selection.odd.value / trueOdd - 1) * 100;
+				return { ...matchedBet, value, trueOdd };
 			};
 
-			for (const market of matchData.markets) {
-				const marketNameLower = market.name.toLowerCase();
-				const translatedMarketNameLower = translatedData.marketName.toLowerCase();
+			for (const marketName in groupedMatches) {
+				const marketGroup = groupedMatches[marketName];
+				const valuedBets = marketGroup.map(calculateValue);
+				const bestBetInGroup = valuedBets.reduce((best, current) => {
+					return (current.value > best.value) ? current : best;
+				}, valuedBets[0]);
 
-				if (providerData.lineType === 'money_line') {
-					if (marketNameLower.startsWith(translatedMarketNameLower)) {
-						for (const selection of market.selections) {
-							if (selection.name.toLowerCase() === translatedData.selectionName.toLowerCase() && selection.status.toUpperCase() === "VALID") {
-								const result = calculateValue(selection, providerData);
-								if (result && result.value > this.edgeRunner.minValueBetPercentage) {
-									console.log(`[Edgerunner] Value bet found: ${result.value.toFixed(2)}%`);
-									return { market, selection, trueOdd: result.trueOdd, bookmakerOdds: result.bookmakerOdds };
-								} else if (result) {
-									console.log(`[Edgerunner] No value bet for "${selection.name}": Value=${result.value.toFixed(2)}%`);
-								}
+				if (bestBetInGroup && bestBetInGroup.value > (this.edgerunnerConf.minValueBetPercentage || 0)) {
+					valueBets.push({
+						market: bestBetInGroup.bookmaker.market,
+						selection: bestBetInGroup.bookmaker.selection,
+						value: bestBetInGroup.value,
+						trueOdd: bestBetInGroup.trueOdd,
+						bookmakerOdds: bestBetInGroup.bookmaker.selection.odd.value,
+					});
+				}
+			}
+
+			valueBets.sort((a, b) => b.value - a.value);
+			return valueBets;
+
+		} catch (error) {
+			console.error('[Edgerunner] Error finding best value bets:', error);
+			return [];
+		}
+	}
+
+	bridgeMarket(bookmakerMarkets, providerMarkets) {
+		try {
+			const normalizeProvider = (d) => ({ ...d, money_line: d.money_line ? { main: d.money_line } : undefined });
+			const normalizedProviderMarkets = normalizeProvider(providerMarkets);
+
+			const sportId = providerMarkets.sportId || '1';
+
+			const bookmakerSelections = bookmakerMarkets.flatMap(market =>
+				market.selections.map(selection => ({
+					searchable: {
+						name: market.name,
+						outcome: selection.name,
+						specialValue: market.specialValue
+					},
+					original: { market, selection }
+				}))
+			);
+
+			const groupedMatches = {};
+
+			for (const [line, submarkets] of Object.entries(normalizedProviderMarkets)) {
+				const mapping = this.bookmaker.lineTypeMapper[line];
+				if (!mapping || !submarkets) continue;
+
+				const sportMapping = mapping.sport[sportId];
+				const sportConfig = sportMapping?.['*'] || mapping.sport['*']?.['*'];
+
+				if (!sportConfig) continue;
+
+				const bridge = sportMapping.bridge || {};
+
+				for (const [subKey, outcomes] of Object.entries(submarkets)) {
+					for (const [outcome, odd] of Object.entries(outcomes)) {
+
+						const specialMapping = bridge.specials?.[subKey];
+
+						const outcomeMap = specialMapping?.outcome || sportConfig.outcome;
+						if (!outcomeMap[outcome]) continue;
+
+						const searchName = specialMapping?.name || sportConfig.label || mapping.name;
+						const searchOutcome = outcomeMap[outcome];
+						const useExactNameMatch = !!specialMapping;
+						const needsSpecialValueCheck = !specialMapping && line !== 'money_line';
+						const valueToMatch = needsSpecialValueCheck
+							? (bridge[subKey] ?? bridge[String(parseFloat(subKey))] ?? subKey)
+							: null;
+
+						const gameFound = bookmakerSelections.find((sel) => {
+							const s = sel.searchable;
+							const nameMatches = useExactNameMatch ? s.name.toLowerCase() === searchName.toLowerCase() : s.name.toLowerCase().startsWith(searchName.toLowerCase());
+							const outcomeMatches = s.outcome.toLowerCase() === searchOutcome.toLowerCase();
+							const specialValueMatches = needsSpecialValueCheck ? s.specialValue === valueToMatch : true;
+							return nameMatches && outcomeMatches && specialValueMatches;
+						});
+
+						if (gameFound) {
+							const groupKey = gameFound.searchable.name.toLowerCase();
+							if (!groupedMatches[groupKey]) {
+								groupedMatches[groupKey] = [];
 							}
-						}
-					}
-				} else if (providerData.lineType === 'total') {
-					if (marketNameLower.startsWith(translatedMarketNameLower.replace(/ \d+(\.\d+)?$/, ''))) {
-						const marketPoints = parseFloat(market.specialValue);
-						const providerPoints = parseFloat(translatedData.specialValue);
-						let pointsToCheck = [providerPoints];
-						if (Number.isInteger(providerPoints)) {
-							pointsToCheck.push(providerPoints + 0.5);
-						}
-						console.log(`[Edgerunner] Checking total market: ${market.name}, specialValue: ${market.specialValue}, translatedSpecialValue: ${providerPoints}`);
-						for (const checkPoints of pointsToCheck) {
-							console.log(`[Edgerunner] Checking points: marketPoints=${marketPoints}, checkPoints=${checkPoints}`);
-							if (marketPoints === checkPoints) {
-								for (const selection of market.selections) {
-									console.log(`[Edgerunner] Checking selection: ${selection.name}, status: ${selection.status}`);
-									if (selection.name.toLowerCase() === translatedData.selectionName.toLowerCase() && selection.status.toUpperCase() === "VALID") {
-										const result = calculateValue(selection, providerData);
-										if (result && result.value > this.edgeRunner.minValueBetPercentage) {
-											console.log(`[Edgerunner] Value bet found: ${result.value.toFixed(2)}%`);
-											return { market, selection, trueOdd: result.trueOdd, bookmakerOdds: result.bookmakerOdds };
-										} else if (result) {
-											console.log(`[Edgerunner] No value bet for "${selection.name}": Value=${result.value.toFixed(2)}%`);
-										}
-									}
+
+							groupedMatches[groupKey].push({
+								bookmaker: gameFound.original,
+								provider: {
+									lineType: line,
+									lineValue: subKey,
+									matchedOutcome: { name: outcome, odd: odd },
+									fullLineData: { ...outcomes, lineType: line },
+									sportId: providerMarkets.sportId,
+									periodNumber: providerMarkets.periodNumber
 								}
-							}
-						}
-					} else {
-						console.log(`[Edgerunner] Market name mismatch: marketName=${market.name}, translatedMarketName=${translatedMarketNameLower}`);
-					}
-				} else if (providerData.lineType === 'spread') {
-					if (marketNameLower.startsWith(translatedMarketNameLower)) {
-						if (translatedData.specialValue.replace(/\s/g, '') === market.specialValue.replace(/\s/g, '')) {
-							for (const selection of market.selections) {
-								if (selection.name.toLowerCase() === translatedData.selectionName.toLowerCase() && selection.status.toUpperCase() === "VALID") {
-									const result = calculateValue(selection, providerData);
-									if (result && result.value > this.edgeRunner.minValueBetPercentage) {
-										console.log(`[Edgerunner] Value bet found: ${result.value.toFixed(2)}%`);
-										return { market, selection, trueOdd: result.trueOdd, bookmakerOdds: result.bookmakerOdds };
-									} else if (result) {
-										console.log(`[Edgerunner] No value bet for "${selection.name}": Value=${result.value.toFixed(2)}%`);
-									}
-								}
-							}
-						} else {
-							console.log(`[Edgerunner] Special value mismatch: Provider=${translatedData.specialValue}, Bookmaker=${market.specialValue}`);
+							});
 						}
 					}
 				}
 			}
 
-			console.log(`[Edgerunner] No value bet found for ${matchData.name}.`);
-			return null;
+			return groupedMatches;
+
 		} catch (error) {
-			console.error('[Edgerunner] Error evaluating betting opportunity:', error);
+			console.error('[Edgerunner] Error bridging markets:', error);
 			return null;
 		}
 	}
@@ -263,81 +302,105 @@ class EdgeRunner {
 				}
 				console.log(`[Edgerunner] Potential Match Found: ${potentialMatch.EventName}`);
 
-				const detailedMatchData = await this.bookmaker.getMatchDetailsByEvent(
+				const detailedBookmakerData = await this.bookmaker.getMatchDetailsByEvent(
 					potentialMatch.IDEvent,
 					potentialMatch.EventName
 				);
-				if (!detailedMatchData) {
-					console.log(`[Edgerunner] Failed to fetch full match details.`);
+				if (!detailedBookmakerData) {
+					console.log(`[Edgerunner] Failed to fetch full bookmaker data.`);
 					continue;
 				}
-				// console.log(`[Edgerunner] Successfully fetched full data for ${detailedMatchData.name}`);
 
-				const isMatchVerified = await this.bookmaker.verifyMatch(detailedMatchData, providerData);
+				const bookmakerTime = detailedBookmakerData.date;
+				const providerTime = providerData.starts;
+				const isMatchVerified = await this.bookmaker.verifyMatch(bookmakerTime, providerTime);
 				if (!isMatchVerified) {
-					console.log(`[Edgerunner] Match Time Mismatch Disacrd: ${detailedMatchData.name}`);
+					console.log(`[Edgerunner] Match Time Mismatch Discarded: ${detailedBookmakerData.name}`);
 					continue;
 				}
-				console.log('[Edgerunner] Match Time Verified For:', detailedMatchData.name);
+				console.log('[Edgerunner] Match Time Verified For:', detailedBookmakerData.name);
 
-				await this.#saveSuccessfulMatch(detailedMatchData, providerData);
+				await this.#saveSuccessfulMatch(detailedBookmakerData, providerData);
 
-				const valueBetDetails = await this.#evaluateBettingOpportunity(detailedMatchData, providerData);
-				if (!valueBetDetails) {
+				const detailedProviderPayload = await this.provider.getDetailedInfo(providerData.eventId);
+				if (!detailedProviderPayload?.data?.periods?.num_0) {
+					console.log(`[Edgerunner] Main market data not found in detailed provider info.`);
+					continue;
+				}
+				const providerMainMarket = detailedProviderPayload.data.periods.num_0;
+
+				const bookmakerMarkets = detailedBookmakerData.markets;
+				const providerMarkets = {
+					money_line: providerMainMarket.money_line,
+					spreads: providerMainMarket.spreads,
+					totals: providerMainMarket.totals,
+					team_total: providerMainMarket.team_total,
+					sportId: providerData.sportId,
+					periodNumber: 0
+				};
+
+				const valueBets = await this.evaluateMarket(bookmakerMarkets, providerMarkets);
+
+				if (!valueBets || valueBets.length === 0) {
+					console.log('[Edgerunner] No value bets found for this match.');
 					continue;
 				}
 
-				const stakeAmount = this.edgeRunner.fixedStake.enabled
-					? this.edgeRunner.fixedStake.value
-					: this.#calculateStake(valueBetDetails.trueOdd, valueBetDetails.bookmakerOdds, this.bankroll);
+				console.log(chalk.greenBright(`[Edgerunner] Found ${valueBets.length} value opportunities.`));
 
-				if (stakeAmount > 0) {
-					const summary = {
-						match: detailedMatchData.name,
-						market: valueBetDetails.market.name,
-						selection: valueBetDetails.selection.name,
-						odds: valueBetDetails.selection.odd.value,
-						stake: stakeAmount,
-						potentialWinnings: stakeAmount * valueBetDetails.selection.odd.value,
-						bankroll: this.bankroll
-					};
-					console.log(chalk.greenBright('[Edgerunner] Constructed Bet:'), summary);
+				for (const valueBet of valueBets) {
+					const stakeAmount = this.edgerunnerConf.fixedStake.enabled
+						? this.edgerunnerConf.fixedStake.value
+						: this.#calculateStake(valueBet.trueOdd, valueBet.bookmakerOdds, this.bankroll);
 
-					try {
-						const betPayload = this.bookmaker.constructBetPayload(
-							detailedMatchData,
-							valueBetDetails.market,
-							valueBetDetails.selection,
-							stakeAmount,
-							providerData
-						);
-						await this.bookmaker.placeBet(this.username, betPayload);
-						console.log(chalk.bold.magenta('[Edgerunner] Bet placed'));
-						// console.log('[Edgerunner] Update Account Info');
-						const updatedAccountInfo = await this.bookmaker.getAccountInfo(this.username);
-						if (updatedAccountInfo) {
-							this.bankroll = updatedAccountInfo.balance;
-							console.log(chalk.cyan(`[Edgerunner] Bankroll updated to: ${this.bankroll}`));
-						}
-					} catch (betError) {
-						if (betError instanceof AuthenticationError) {
-							console.log(chalk.yellow(`[Edgerunner] Auth error during bet placement: ${betError.message}. Re-signing in...`));
-							const signInResult = await this.bookmaker.signin(this.username, this.password);
-							if (signInResult.success) {
-								console.log('[Edgerunner] Sign-in successful. Retrying bet placement...');
-								await this.bookmaker.placeBet(this.username, betPayload);
+					if (stakeAmount > 0) {
+						const summary = {
+							match: detailedBookmakerData.name,
+							market: valueBet.market.name,
+							selection: valueBet.selection.name,
+							odds: valueBet.selection.odd.value,
+							stake: stakeAmount,
+							value: `${valueBet.value.toFixed(2)}%`
+						};
+						console.log(chalk.greenBright('[Edgerunner] Placing Bet:'), summary);
+
+						try {
+							const betPayload = this.bookmaker.constructBetPayload(
+								detailedBookmakerData,
+								valueBet.market,
+								valueBet.selection,
+								stakeAmount,
+								providerData
+							);
+							await this.bookmaker.placeBet(this.username, betPayload);
+							console.log(chalk.bold.magenta('[Edgerunner] Bet placed successfully'));
+
+							const updatedAccountInfo = await this.bookmaker.getAccountInfo(this.username);
+							if (updatedAccountInfo) {
+								this.bankroll = updatedAccountInfo.balance;
+								console.log(chalk.cyan(`[Edgerunner] Bankroll updated to: ${this.bankroll}`));
 							}
-						} else {
-							throw betError;
+						} catch (betError) {
+							if (betError instanceof AuthenticationError) {
+								console.log(chalk.yellow(`[Edgerunner] Auth error during bet placement: ${betError.message}. Re-signing in...`));
+								const signInResult = await this.bookmaker.signin(this.username, this.password);
+								if (signInResult.success) {
+									console.log('[Edgerunner] Sign-in successful. Retrying bet placement...');
+									await this.bookmaker.placeBet(this.username, betPayload);
+								}
+							} else {
+								throw betError;
+							}
 						}
+					} else {
+						console.log('[Edgerunner] Stake is zero or less, skipping bet for:', valueBet.market.name, valueBet.selection.name);
 					}
-				} else {
-					console.log('[Edgerunner] No value according to Kelly Criterion, skipping bet.');
 				}
+
 			} catch (error) {
 				console.error(`[Edgerunner] Error processing provider data ${providerData.id}:`, error);
 			} finally {
-				await new Promise(resolve => setTimeout(resolve, configurations.bookmaker.interval * 1000));
+				await new Promise(resolve => setTimeout(resolve, this.config.bookmaker.interval * 1000));
 			}
 		}
 		this.#isWorkerRunning = false;
@@ -347,12 +410,10 @@ class EdgeRunner {
 	async start() {
 		// not so sure about this check comeback later
 		if (this.provider.state.isRunning) {
-			console.log(chalk.yellow(`[Edgerunner] Already polling for ${this.config.edgeRunner.name}, skipping start.`));
+			console.log(chalk.yellow(`[Edgerunner] Already polling for ${this.edgerunnerConf.name}, skipping start.`));
 			return;
 		}
-		console.log(chalk.green(`[Edgerunner] Starting bot: ${this.config.edgeRunner.name}`));
-
-		await this.initialize();
+		console.log(chalk.green(`[Edgerunner] Starting bot: ${this.edgerunnerConf.name}`));
 
 		this.provider.startPolling();
 		this.provider.on('notifications', (games) => {
@@ -367,14 +428,14 @@ class EdgeRunner {
 
 			console.log(chalk.cyan(`[Edgerunner] Received ${games.length} games`));
 			games.forEach(game => {
-				if (game.id && !this.#seenGameIds.has(game.id)) {
+				if (game.eventId && !this.#processedEventIds.has(game.eventId)) {
 					this.#gameQueue.push(game);
-					this.#seenGameIds.add(game.id);
-					console.log(chalk.cyan(`[Edgerunner] Added game ID ${game.id} to queue`));
-				} else if (game.id) {
-					console.log(chalk.yellow(`[Edgerunner] Skipped duplicate game ID ${game.id}`));
+					this.#processedEventIds.add(game.eventId); // Add the eventId to the set
+					console.log(chalk.cyan(`[Edgerunner] Added game with event ID ${game.eventId} to queue`));
+				} else if (game.eventId) {
+					console.log(chalk.yellow(`[Edgerunner] Skipped duplicate event ID ${game.eventId}`));
 				} else {
-					console.log(chalk.yellow('[Edgerunner] Skipped game with missing id:', JSON.stringify(game)));
+					console.log(chalk.yellow('[Edgerunner] Skipped game with missing eventId:', JSON.stringify(game)));
 				}
 			});
 			this.#processQueue();
@@ -384,8 +445,8 @@ class EdgeRunner {
 	async stop() {
 		this.provider.stopPolling();
 		this.#isWorkerRunning = false;
-		this.#gameQueue.length = 0; // Clear queue
-		this.#seenGameIds.clear(); // Clear seen IDs
+		this.#gameQueue.length = 0;
+		this.#processedEventIds.clear();
 		if (this.browser) {
 			console.log('[Browser] Closing browser instance');
 			await this.browser.close();
