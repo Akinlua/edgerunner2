@@ -18,6 +18,7 @@ export default
 				if (response.ok) {
 					await interaction.editReply(
 						`ℹ️ Bot ${pm_id} status:\n` +
+						`Bot Active: ${result.isBotActive}\n` + 
 						`Bankroll: ${result.bankroll}\n` +
 						`Queue Length: ${result.queueLength}\n` +
 						`Worker Running: ${result.isWorkerRunning}\n` +

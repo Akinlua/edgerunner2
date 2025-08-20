@@ -13,6 +13,7 @@ class EdgeRunner {
 	#gameQueue = [];
 	#processedEventIds = new Set();
 	#isWorkerRunning = false;
+	#isBotActive = false;
 	#CORRELATED_DUMP_PATH = path.join(process.cwd(), 'data', 'correlated_matches.json');
 
 	constructor(config, browser, bookmaker) {
@@ -354,16 +355,22 @@ class EdgeRunner {
 
 				console.log(chalk.greenBright(`[Edgerunner] Found ${valueBets.length} value opportunities.`));
 				this.#sendLog(`[Edgerunner] Found ${valueBets.length} value opportunities.`);
-				this.#sendLog(JSON.stringify(valueBets));
-
 				for (const valueBet of valueBets) {
+					const valueBetMessage = `📈 **Value Bet Found**\n` +
+						`> **Match:** ${detailedBookmakerData.name}\n` +
+						`> **Market:** ${valueBet.market.name}\n` +
+						`> **Selection:** ${valueBet.selection.name}\n` +
+						`> **Odds:** ${valueBet.selection.odd.value}\n` +
+						`> **Value:** ${valueBet.value.toFixed(2)}%`;
+					this.#sendLog(valueBetMessage);
+
 					const stakeAmount = this.edgerunnerConf.fixedStake.enabled
 						? this.edgerunnerConf.fixedStake.value
 						: this.#calculateStake(valueBet.trueOdd, valueBet.bookmakerOdds, this.bankroll);
 
 					if (stakeAmount > 0) {
 						const summary = {
-							type: 'bet', 
+							type: 'bet',
 							data: {
 								match: detailedBookmakerData.name,
 								market: valueBet.market.name,
@@ -386,6 +393,13 @@ class EdgeRunner {
 							);
 							await this.bookmaker.placeBet(this.username, betPayload);
 							console.log(chalk.bold.magenta('[Edgerunner] Bet placed successfully'));
+							const successMessage = `✅ **Bet Placed Successfully!**\n`
+								+ `> **Stake:** $${stakeAmount.toFixed(2)}\n`
+								+ `> **Match:** ${detailedBookmakerData.name}\n`
+								+ `> **Market:** ${valueBet.market.name}\n`
+								+ `> **Selection:** ${valueBet.selection.name}\n`
+								+ `> **Odds:** ${valueBet.selection.odd.value}`;
+							this.#sendLog(successMessage);
 
 							const updatedAccountInfo = await this.bookmaker.getAccountInfo(this.username);
 							if (updatedAccountInfo) {
@@ -395,12 +409,14 @@ class EdgeRunner {
 						} catch (betError) {
 							if (betError instanceof AuthenticationError) {
 								console.log(chalk.yellow(`[Edgerunner] Auth error during bet placement: ${betError.message}. Re-signing in...`));
+								this.#sendLog(`⚠️ **Bet Failed:** Authentication error during placement. Re-signing in...`);
 								const signInResult = await this.bookmaker.signin(this.username, this.password);
 								if (signInResult.success) {
 									console.log('[Edgerunner] Sign-in successful. Retrying bet placement...');
 									await this.bookmaker.placeBet(this.username, betPayload);
 								}
 							} else {
+								this.#sendLog(`❌ **Bet Failed:** An unexpected error occurred. Reason: ${betError.message}`);
 								throw betError;
 							}
 						}
@@ -420,13 +436,13 @@ class EdgeRunner {
 	}
 
 	async start() {
-		// not so sure about this check comeback later
-		if (this.provider.state.isRunning) {
+		if (this.#isBotActive) {
 			console.log(chalk.yellow(`[Edgerunner] Already polling for ${this.edgerunnerConf.name}, skipping start.`));
 			return;
 		}
+		this.#isBotActive = true;
 		console.log(chalk.green(`[Edgerunner] Starting bot: ${this.edgerunnerConf.name}`));
-
+		this.#sendLog(`🚀 **Bot Started** for **${this.edgerunnerConf.name}**.`);
 		this.provider.startPolling();
 		this.provider.on('notifications', (games) => {
 			if (!games || games.length === 0) {
@@ -459,20 +475,23 @@ class EdgeRunner {
 		this.#isWorkerRunning = false;
 		this.#gameQueue.length = 0;
 		this.#processedEventIds.clear();
+		this.#isBotActive = false;
 		if (this.browser) {
-			this.#sendLog("Bot Stopped");
 			console.log('[Browser] Closing browser instance');
 			await this.browser.close();
 			this.browser = null;
 		}
+		this.#sendLog(`🛑 **Bot Stopped** for ${this.config.bookmaker.username}.`);
 		console.log(chalk.yellow(`[Edgerunner] Stopped bot: ${this.config.name}`));
 	}
 
 	getStatus() {
 		return {
+			isBotActive: this.#isBotActive,
 			bankroll: this.bankroll,
 			queueLength: this.#gameQueue.length,
 			isWorkerRunning: this.#isWorkerRunning,
+			browserActive: !!this.browser
 		};
 	}
 }
