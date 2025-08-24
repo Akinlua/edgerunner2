@@ -321,32 +321,44 @@ class EdgeRunner {
 				}
 				const accountInfo = await this.bookmaker.getAccountInfo(this.username);
 				if (!accountInfo) {
-					throw new Error('Failed to fetch account info');
+					throw new AuthenticationError('Failed to fetch account info, likely not logged in.');
 				}
 				this.bankroll = accountInfo.balance;
 				this.openBets = accountInfo.openBetsCount;
 			} catch (error) {
 				if (error instanceof AuthenticationError) {
 					console.log(chalk.yellow(`[Edgerunner] Auth error: ${error.message}. Attempting to sign in...`));
+					this.#sendLog(`⚠️ **Authentication Error:** Attempting to sign in...`);
+
 					const signInResult = await this.bookmaker.signin(this.username, this.password);
 					if (signInResult.success) {
+						console.log('[Edgerunner] Sign-in successful, re-fetching account info...');
+						this.#sendLog('✅ Sign-in successful');
 						const accountInfo = await this.bookmaker.getAccountInfo(this.username);
 						if (accountInfo) {
 							this.bankroll = accountInfo.balance;
 							this.openBets = accountInfo.openBetsCount;
+						} else {
+							this.#sendLog('❌ **Critical Failure:** Signed in, but could not read account info from the page.');
 						}
+					} else {
+						this.#sendLog(`❌ **Critical Failure:** Could not sign in. Please check credentials. Reason: ${signInResult.reason || 'Unknown'}`);
 					}
 				} else {
 					console.error('[Edgerunner] An unexpected error occurred while fetching account info:', error);
+					this.#sendLog(`❌ **Critical Failure:** An unexpected error occurred during startup: ${error.message}`);
 				}
 			}
 		}
 
 		if (this.bankroll === null) {
-			console.error(chalk.red('[Edgerunner] Could not establish bankroll. Worker stopping.'));
+			const finalErrorMessage = '🛑 **Bot Stopping:** Could not establish bankroll after attempting to sign in. Please check credentials or website status.';
+			console.error(chalk.red(`[Edgerunner] ${finalErrorMessage}`));
+			this.#sendLog(finalErrorMessage);
 			this.#isWorkerRunning = false;
-			return;
+			process.exit(1); // Force exit to ensure the controller cleans it up.
 		}
+
 		console.log(chalk.green(`[Edgerunner] Worker started. Initial bankroll: ${this.bankroll}.`));
 
 		while (this.#gameQueue.length > 0) {
@@ -448,11 +460,11 @@ class EdgeRunner {
 							console.log(chalk.bold.magenta('[Edgerunner] Bet placed successfully'));
 							const successMessage = `✅ **Bet Placed Successfully!**\n`
 								+ `> **Sport:** ${detailedBookmakerData.eventCategory}\n`
-								+ `> **Stake:** $${stakeAmount.toFixed(2)}\n`
+								+ `> **Stake:** ₦${stakeAmount.toFixed(2)}\n`
 								+ `> **Match:** ${detailedBookmakerData.name}\n`
 								+ `> **Market:** ${valueBet.market.name}\n`
 								+ `> **Selection:** ${valueBet.selection.name}\n`
-								+`> **Points:** ${valueBet.market.specialValue || "none"}\n` 
+								+ `> **Points:** ${valueBet.market.specialValue || "none"}\n`
 								+ `> **Odds:** ${valueBet.selection.odd.value}`;
 							this.#sendLog(successMessage);
 

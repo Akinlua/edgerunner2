@@ -52,7 +52,6 @@ class BetKingBookmaker {
 							specials: {
 								"0.0": { name: "Draw No Bet", outcome: { home: "1 DNB", away: "2 DNB" } },
 								"0.5": { name: "Double Chance", outcome: { home: "1X", away: "X2" } },
-								"-0.5": { name: "1X2", outcome: { home: "1", away: "2" } }
 							}
 						}
 					},
