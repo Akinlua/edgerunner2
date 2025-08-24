@@ -191,7 +191,7 @@ class EdgeRunner {
 				let diagnosticLog = `[Edgerunner] Market Analysis: ${marketName}\n`;
 				for (const bet of valuedBets) {
 					const isBest = (bet.bookmaker.selection.id === bestBetInGroup.bookmaker.selection.id);
-					const icon = isBest ? '✅' : '➖';
+					const icon = isBest ? '⭐' : '➖';
 					const selectionName = bet.bookmaker.selection.name;
 					const valueText = `Value: ${bet.value.toFixed(2)}%`;
 					const oddsText = `@ ${bet.bookmaker.selection.odd.value}`;
@@ -359,12 +359,14 @@ class EdgeRunner {
 			process.exit(1); // Force exit to ensure the controller cleans it up.
 		}
 
-		console.log(chalk.green(`[Edgerunner] Worker started. Initial bankroll: ${this.bankroll}.`));
+		if (!this.#isWorkerRunning) { 
+			console.log(chalk.green(`[Edgerunner] Worker started. Initial bankroll: ${this.bankroll}.`));
+		}
 
 		while (this.#gameQueue.length > 0) {
 			const providerData = this.#gameQueue.shift(); // FIFO
 			try {
-				console.log(`[Edgerunner] Processing: ${providerData.home} vs ${providerData.away}`);
+				console.log(chalk.blueBright(`\n--- Processing: ${providerData.home} vs ${providerData.away} ---`));
 
 				const potentialMatch = await this.bookmaker.getMatchDataByTeamPair(providerData.home, providerData.away);
 				if (!potentialMatch) {
@@ -410,15 +412,26 @@ class EdgeRunner {
 					periodNumber: 0
 				};
 
+
+				const gameHeader = `--- Processing: ${providerData.home} vs ${providerData.away} ${detailedBookmakerData.eventCategory}---`;
+				this.#sendLog(`\n\`\`\`\n${gameHeader}\n\`\`\``);
 				const valueBets = await this.evaluateMarket(bookmakerMarkets, providerMarkets);
 
 				if (!valueBets || valueBets.length === 0) {
-					console.log('[Edgerunner] No value bets found for this match.');
+					const noValueMessage = `No value opportunities found for this match.`;
+					console.log(`[Edgerunner] ${noValueMessage}`);
+					this.#sendLog(noValueMessage);
 					continue;
 				}
 
-				console.log(chalk.greenBright(`[Edgerunner] Found ${valueBets.length} value opportunities.`));
-				this.#sendLog(`[Edgerunner] Found ${valueBets.length} value opportunities.`);
+				const summaryHeader = `✅ Found ${valueBets.length} value opportunities for **${detailedBookmakerData.name}**`;
+				let summaryDetails = valueBets.map(bet =>
+					`> **${bet.selection.name}** (${bet.market.name}) @ **${bet.bookmakerOdds}** (Value: ${bet.value.toFixed(2)}%)`
+				).join('\n');
+
+				this.#sendLog(`${summaryHeader}\n${summaryDetails}`);
+				console.log(chalk.greenBright(`[Edgerunner] ${summaryHeader}`));
+
 				for (const valueBet of valueBets) {
 					const valueBetMessage = `📈 **Value Bet Found**\n` +
 						`> **Sport:** ${detailedBookmakerData.eventCategory}\n` +
