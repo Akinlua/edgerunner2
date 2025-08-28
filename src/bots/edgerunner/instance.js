@@ -12,7 +12,6 @@ async function main() {
 	try {
 		const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
 		const bot = await EdgeRunner.create(config);
-		// const bot = new EdgeRunner(config);
 		await bot.start();
 		console.log(chalk.green(`[BotRunner] EdgeRunner started with config: ${configPath}`));
 
@@ -25,10 +24,11 @@ async function main() {
 				console.log('[BotRunner] Stopped');
 				process.exit(0);
 			} else if (msg.type === 'status') {
+				const statusData = await bot.getStatus();
 				process.send({
 					type: 'status',
 					data: {
-						status: bot.getStatus()
+						status: statusData
 					}
 				});
 			}

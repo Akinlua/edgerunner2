@@ -11,16 +11,16 @@ console.log = (...args) => {
 const providerFootballMarket = {
 	"sportId": '1',
 	"money_line": {
-		"home": 2.35,
-		"draw": 3.16,
-		"away": 2.76
+		"home": 2.81,
+		"draw": 3.23,
+		"away": 2.27
 	},
 	"spreads": {
 		"0.0": {
 			"hdp": 0,
 			"alt_line_id": null,
-			"home": 1.729,
-			"away": 2.04,
+			"home": 2.09,
+			"away": 1.671,
 			"max": 150
 		},
 		"-0.75": {
@@ -143,9 +143,9 @@ const bookmakerFootballMarket = [
 		typeId: 110,
 		specialValue: "0",
 		selections: [
-			{ name: "1", odd: { value: 1.28 }, status: "VALID", specialValue: "0" },
-			{ name: "X", odd: { value: 5 }, status: "VALID", specialValue: "0" },
-			{ name: "2", odd: { value: 9.2 }, status: "VALID", specialValue: "0" }
+			{ name: "1", odd: { value: 2.90 }, status: "VALID", specialValue: "0" },
+			{ name: "X", odd: { value: 3.20 }, status: "VALID", specialValue: "0" },
+			{ name: "2", odd: { value: 2.35 }, status: "VALID", specialValue: "0" }
 		]
 	},
 	{
@@ -238,8 +238,8 @@ const bookmakerFootballMarket = [
 		typeId: 147,
 		specialValue: "0",
 		selections: [
-			{ name: "1 DNB", odd: { value: 1.07 }, status: "VALID", specialValue: "0" },
-			{ name: "2 DNB", odd: { value: 5.5 }, status: "VALID", specialValue: "0" }
+			{ name: "1 DNB", odd: { value: 2.03 }, status: "VALID", specialValue: "0" },
+			{ name: "2 DNB", odd: { value: 1.67 }, status: "VALID", specialValue: "0" }
 		]
 	}
 ]
@@ -505,20 +505,26 @@ test("Bot Service Tests", async (t) => {
 		);
 	});
 
-	await t.test("Evaluate function for football", async (t) => {
+	await t.test("Evaluate function for football", { skip: true }, async (t) => {
 		const result = edgerunner.bridgeMarket(bookmakerFootballMarket, providerFootballMarket);
 		console.log("================ FOOTBALL ================");
 		console.log(JSON.stringify(result, null, 2));
 		console.log("===========================================");
 	});
 
-	await t.test("Evaluate function for basketball", async (t) => {
+	await t.test("Evaluate function for basketball", { skip: true }, async (t) => {
 		const result = edgerunner.bridgeMarket(bookmakerBasketballMarket, providerBasketballMarket);
 		console.log("================ BASKETBALL ===============");
 		console.log(JSON.stringify(result, null, 2));
 		console.log("============================================");
 	});
 
+	await t.test("Evaluate function for basketball", async (t) => {
+		const result = edgerunner.evaluateMarket(bookmakerFootballMarket, providerFootballMarket);
+		console.log("================ xxxxxxxxx ================");
+		console.log(JSON.stringify(result, null, 2));
+		console.log("===========================================");
+	});
 
 	t.after(async () => {
 		await edgerunner.stop();

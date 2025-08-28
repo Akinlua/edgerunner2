@@ -147,9 +147,9 @@ class Provider extends EventEmitter {
                 case 'power':
                 default:
                     const findK = () => {
-                        let low = 1.0;
-                        let high = 4.0;
-                        const tolerance = 1e-7;
+                        let low = 0.0001;
+                        let high = 10.0;
+                        const tolerance = 1e-10;
                         for (let i = 0; i < 100; i++) {
                             let k = (low + high) / 2;
                             let sum = impliedProbs.reduce((acc, p) => acc + Math.pow(p, k), 0);

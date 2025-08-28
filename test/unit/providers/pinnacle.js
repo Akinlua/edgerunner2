@@ -19,7 +19,7 @@ test("Provider Service Test", async (t) => {
 			"alertApiUrl": "https://swordfish-production.up.railway.app/alerts/user_30I2I43w4GgKpp0wHILCzs6HJmU"
 		});
 	})
-	await t.test("Get Deatiled Provider Data", async (t) => {
+	await t.test("Get Deatiled Provider Data", { skip: true }, async (t) => {
 		// get a recenet real provider Data
 		const providerData = {
 			"id": "1754956546957-0",
@@ -37,6 +37,15 @@ test("Provider Service Test", async (t) => {
 		console.log(JSON.stringify(result, null, 2));
 		console.log("========================");
 		console.log("Console Logs:");
+	})
+
+	await t.test("Devig Odds", async (t) => {
+		const vigMarket = [1.84, 3.29, 3.68]; 
+		const vigResult = provider.devigOdds(vigMarket, 'power');
+		const formattedResult = vigResult.map(o => o.toFixed(4));
+		console.log(`Input Odds: [${vigMarket.join(', ')}]`);
+		console.log(`Devigged Odds: [${formattedResult.join(', ')}]`);
+		console.log("========================");
 	})
 
 })

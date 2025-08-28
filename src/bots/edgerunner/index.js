@@ -52,10 +52,6 @@ class EdgeRunner {
 
 	static async #initializeBrowser() {
 		try {
-			if (this.browser && this.bookmaker) {
-				console.log(chalk.yellow('[EdgeRunner] Already initialized, skipping.'));
-				return;
-			}
 			const browser = await puppeteer.launch({
 				headless: true,
 				args: [
@@ -150,6 +146,30 @@ class EdgeRunner {
 		return finalStake;
 	}
 
+	calculateValue(matchedBet) {
+		const { bookmaker, provider } = matchedBet;
+		const data = provider.fullLineData;
+		const nonOddKeys = new Set(['lineType', 'points', 'hdp', 'alt_line_id', 'max']);
+		const { outcomeKeys, oddsArray } = Object.entries(data).reduce((acc, [key, value]) => {
+			if (!nonOddKeys.has(key) && typeof value === 'number') {
+				acc.outcomeKeys.push(key);
+				acc.oddsArray.push(value);
+			}
+			return acc;
+		}, { outcomeKeys: [], oddsArray: [] });
+		if (oddsArray.length < 2) return { ...matchedBet, value: -Infinity };
+		const noVigOddsArray = this.provider.devigOdds(oddsArray);
+
+		if (!noVigOddsArray) return { ...matchedBet, value: -Infinity };
+		const noVigOdds = Object.fromEntries(outcomeKeys.map((key, i) => [key, noVigOddsArray[i]]));
+		const trueOdd = noVigOdds[provider.matchedOutcome.name];
+
+		if (!trueOdd) return { ...matchedBet, value: -Infinity };
+		const value = (bookmaker.selection.odd.value / trueOdd - 1) * 100;
+
+		return { ...matchedBet, value, trueOdd };
+	};
+
 	async evaluateMarket(bookmakerMarkets, providerMarkets) {
 		try {
 			const groupedMatches = this.bridgeMarket(bookmakerMarkets, providerMarkets);
@@ -159,53 +179,18 @@ class EdgeRunner {
 			}
 
 			const valueBets = [];
-
-			const calculateValue = (matchedBet) => {
-				const { bookmaker, provider } = matchedBet;
-				const data = provider.fullLineData;
-				const nonOddKeys = new Set(['lineType', 'points', 'hdp', 'alt_line_id', 'max']);
-				const { outcomeKeys, oddsArray } = Object.entries(data).reduce((acc, [key, value]) => {
-					if (!nonOddKeys.has(key) && typeof value === 'number') {
-						acc.outcomeKeys.push(key);
-						acc.oddsArray.push(value);
-					}
-					return acc;
-				}, { outcomeKeys: [], oddsArray: [] });
-				if (oddsArray.length < 2) return { ...matchedBet, value: -Infinity };
-				const noVigOddsArray = this.provider.devigOdds(oddsArray);
-
-				if (!noVigOddsArray) return { ...matchedBet, value: -Infinity };
-				const noVigOdds = Object.fromEntries(outcomeKeys.map((key, i) => [key, noVigOddsArray[i]]));
-				const trueOdd = noVigOdds[provider.matchedOutcome.name];
-
-				if (!trueOdd) return { ...matchedBet, value: -Infinity };
-				const value = (bookmaker.selection.odd.value / trueOdd - 1) * 100;
-
-				return { ...matchedBet, value, trueOdd };
-			};
+			const bestBetsForTable = [];
 
 			for (const marketName in groupedMatches) {
 				const marketGroup = groupedMatches[marketName];
-				const valuedBets = marketGroup.map(calculateValue);
+				const valuedBets = marketGroup.map(bet => this.calculateValue(bet));
 				if (!valuedBets || valuedBets.length === 0 || !valuedBets[0]) { continue; }
 
 				const bestBetInGroup = valuedBets.reduce((best, current) => {
 					return (current.value > best.value) ? current : best;
 				}, valuedBets[0]);
+				bestBetsForTable.push({ marketName, ...bestBetInGroup });
 				if (!bestBetInGroup || bestBetInGroup.value === -Infinity) { continue; }
-
-				// -- DIAGNOSTIC LOG ---
-				let diagnosticLog = `[Edgerunner] Market Analysis: ${marketName}\n`;
-				for (const bet of valuedBets) {
-					const isBest = (bet.bookmaker.selection.id === bestBetInGroup.bookmaker.selection.id);
-					const icon = isBest ? '⭐' : '➖';
-					const selectionName = bet.bookmaker.selection.name;
-					const valueText = `Value: ${bet.value.toFixed(2)}%`;
-					const oddsText = `@ ${bet.bookmaker.selection.odd.value}`;
-					diagnosticLog += `  ${icon} ${selectionName.padEnd(15)} ${oddsText.padEnd(8)} ${valueText}\n`;
-				}
-				this.#sendLog(diagnosticLog);
-				console.log(chalk.gray(diagnosticLog));
 
 				const bookmakerOdds = bestBetInGroup.bookmaker.selection.odd.value;
 				const meetsValuePercentage = bestBetInGroup.value > (this.edgerunnerConf.minValueBetPercentage || 0);
@@ -220,6 +205,32 @@ class EdgeRunner {
 						bookmakerOdds: bestBetInGroup.bookmaker.selection.odd.value,
 					});
 				}
+			}
+
+			// -- DIAGNOSTIC LOG ---
+			if (bestBetsForTable.length > 0) {
+				let tableLog = `\n[Edgerunner] BEST\n`;
+
+				bestBetsForTable.forEach(best => {
+					if (!best || !isFinite(best.value)) return;
+
+					let logSelectionName = best.bookmaker.selection.name;
+					const specialValue = best.bookmaker.market.specialValue;
+					if (specialValue && specialValue != 0) {
+						logSelectionName = `${logSelectionName} ${specialValue}`;
+					}
+
+					const marketCol = best.marketName.padEnd(20);
+					const selectionCol = logSelectionName.padEnd(18);
+					const oddsCol = `@ ${best.bookmaker.selection.odd.value.toFixed(2)}`.padEnd(8);
+					const valueColor = best.value > 0 ? chalk.green : chalk.red;
+					const valueCol = `Value: ${best.value.toFixed(2)}%`;
+
+					tableLog += `⭐️ ${marketCol}${selectionCol}${oddsCol}${valueColor(valueCol)}\n`;
+				});
+
+				console.log(chalk.gray(tableLog));
+				this.#sendLog(tableLog);
 			}
 
 			valueBets.sort((a, b) => b.value - a.value);
@@ -307,6 +318,35 @@ class EdgeRunner {
 					}
 				}
 			}
+
+			let summaryLog = `[Edgerunner] BRIDGED\n`;
+			if (Object.keys(groupedMatches).length > 0) {
+				for (const marketName in groupedMatches) {
+					const marketGroup = groupedMatches[marketName];
+					summaryLog += `  └── ${chalk.bold.white(marketName)}\n`;
+
+					marketGroup.forEach(bet => {
+						const valuedBet = this.calculateValue(bet);
+
+						let logSelectionName = bet.bookmaker.selection.name;
+						const specialValue = bet.bookmaker.market.specialValue;
+						if (specialValue && specialValue != 0) {
+							logSelectionName = `${logSelectionName} ${specialValue}`;
+						}
+
+						const providerOdd = valuedBet.provider.matchedOutcome.odd;
+						const bookmakerOdd = valuedBet.bookmaker.selection.odd.value;
+
+						const valueText = isFinite(valuedBet.value) ? valuedBet.value.toFixed(2) + '%' : 'N/A';
+						const valueColor = valuedBet.value > 0 ? chalk.green : chalk.red;
+						summaryLog += `      ├── ${logSelectionName.padEnd(15)} | ${chalk.cyan('P:')} ${providerOdd.toFixed(2).padEnd(6)} | ${chalk.yellow('B:')} ${bookmakerOdd.toFixed(2).padEnd(6)} | Value: ${valueColor(valueText)}\n`;
+					});
+				}
+			} else {
+				summaryLog += `  └── No markets were successfully bridged.`;
+			}
+			this.#sendLog(summaryLog);
+			console.log(chalk.gray(summaryLog));
 
 			return groupedMatches;
 
@@ -420,7 +460,15 @@ class EdgeRunner {
 				};
 
 
-				const gameHeader = `--- Processing: ${providerData.home} vs ${providerData.away} ${detailedBookmakerData.eventCategory}---`;
+				const sportIdMap = {
+					'1': '⚽️ SOCCER',
+					'3': '🏀 BASKETBALL',
+				};
+				const sportName = sportIdMap[providerData.sportId] || '❓ UNKNOWN SPORT';
+				const gameHeader = `
+						=====================================================================
+  						${sportName.padEnd(18)} ${providerData.home} vs ${providerData.away}
+						=====================================================================`;
 				this.#sendLog(`\n\`\`\`\n${gameHeader}\n\`\`\``);
 				const valueBets = await this.evaluateMarket(bookmakerMarkets, providerMarkets);
 
@@ -431,13 +479,23 @@ class EdgeRunner {
 					continue;
 				}
 
-				const summaryHeader = `✅ Found ${valueBets.length} value opportunities for **${detailedBookmakerData.name}**`;
-				let summaryDetails = valueBets.map(bet =>
-					`> **${bet.selection.name}** (${bet.market.name}) @ **${bet.bookmakerOdds}** (Value: ${bet.value.toFixed(2)}%)`
-				).join('\n');
+				let summaryLog = `\n[Edgerunner] ✅[${valueBets.length}] VALUE OPPORTUNITIES FOUND\n`;
+				valueBets.forEach(bet => {
+					let logSelectionName = bet.selection.name;
+					const specialValue = bet.market.specialValue;
+					if (specialValue && specialValue !== 0) {
+						logSelectionName = `${logSelectionName} ${specialValue}`;
+					}
 
-				this.#sendLog(`${summaryHeader}\n${summaryDetails}`);
-				console.log(chalk.greenBright(`[Edgerunner] ${summaryHeader}`));
+					const marketCol = bet.market.name.padEnd(20);
+					const selectionCol = logSelectionName.padEnd(18);
+					const oddsCol = `@ ${bet.bookmakerOdds.toFixed(2)}`.padEnd(8);
+					const valueCol = `Value: ${bet.value.toFixed(2)}%`;
+
+					summaryLog += `  ${marketCol}${selectionCol}${oddsCol}${chalk.green(valueCol)}\n`;
+				});
+				console.log(chalk.gray(summaryLog));
+				this.#sendLog(summaryLog);
 
 				for (const valueBet of valueBets) {
 					const valueBetMessage = `📈 **Value Bet Found**\n` +
