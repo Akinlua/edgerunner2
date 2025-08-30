@@ -5,14 +5,14 @@ const baseConfig = {
 	provider: {
 		name: "pinnacle",
 		storeData: false,
-		interval: 10,
+		interval: 10, // 30 to slow
 		userId: "",
 		alertApiUrl: "",
 	},
 	bookmaker: {
 		name: "betking",
 		storeData: false,
-		interval: 20,
+		interval: 30,
 		username: "",
 		password: ""
 	},
@@ -23,7 +23,7 @@ const baseConfig = {
 		minValueBetPercentage: 6,
 		minValueBetOdds: 1.45,
 		maxValueBetOdds: 4.00,
-		delay: 10
+		delay: 10 // 30 to slow
 
 	}
 };

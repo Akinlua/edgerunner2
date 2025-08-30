@@ -96,7 +96,8 @@ class Logger {
 
 	logGameHeader(providerData, sportIdMapper) {
 		const sportName = sportIdMapper[providerData.sportId] || '❓ UNKNOWN SPORT';
-		this.sender(`\n${'─'.repeat(60)}\n`);
+		this.sender(`${'─'.repeat(60)}`);
+		this.sender(`${'─'.repeat(60)}`);
 		let gameHeader = '----------------------------------------\n';
 		gameHeader += `Sport : ${sportName}\n`;
 		gameHeader += `Match : ${providerData.home} vs ${providerData.away}\n`;
