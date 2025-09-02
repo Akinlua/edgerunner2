@@ -35,7 +35,7 @@ class EdgeRunner {
 			throw new Error("Configuration object is missing.");
 		}
 		try {
-			const browser = await this.#initializeBrowser();
+			const browser = await this.#initializeBrowser(config);
 			const bookmaker = getBookmakerInterface(config.bookmaker.name, config.bookmaker, browser);
 
 			return new EdgeRunner(config, browser, bookmaker);
@@ -45,9 +45,9 @@ class EdgeRunner {
 		}
 	}
 
-	static async #initializeBrowser() {
+	static async #initializeBrowser(config) {
 		try {
-			const browser = await puppeteer.launch({
+			const launchOptions = {
 				headless: true,
 				args: [
 					'--no-sandbox',
@@ -69,7 +69,48 @@ class EdgeRunner {
 					'--disable-client-side-phishing-detection'
 				],
 				protocolTimeout: 60_000
-			});
+			}
+
+			const proxyConf = config.proxy;
+			if (proxyConf && proxyConf.enabled && proxyConf.ip) {
+				console.log(chalk.blue(`[Browser] -> Attempting to use proxy ip: ${proxyConf.ip}`));
+				launchOptions.args.push(`--proxy-server=${proxyConf.ip}`);
+			}
+
+			const browser = await puppeteer.launch(launchOptions);
+
+			if (proxyConf && proxyConf.enabled && proxyConf.username && proxyConf.password) {
+			}
+
+			if (proxyConf && proxyConf.enabled) {
+				console.log(chalk.yellow('[Proxy Test] -> Validating proxy connection...'));
+				let testPage; 
+				try {
+					testPage = await browser.newPage(); 
+					if (proxyConf.username && proxyConf.password) {
+						await testPage.authenticate({
+							username: proxyConf.username,
+							password: proxyConf.password
+						});
+					}
+					await testPage.goto('https://api.ipify.org', {
+						timeout: 15000,
+						waitUntil: 'domcontentloaded'
+					});
+					console.log(chalk.green.bold('[Proxy Test] -> ✅ Proxy connection successful!'));
+					await testPage.close();
+
+				} catch (error) {
+					console.error(chalk.red.bold('[Proxy Test] -> ❌ Proxy connection FAILED.'));
+					console.error(chalk.red('Error: The proxy may be offline, IP is incorrect, or credentials failed.'));
+					if (testPage) {
+						await testPage.close();
+					}
+					await browser.close();
+					throw new Error('Proxy validation failed. Bot will not start.');
+				}
+			}
+
 			console.log(chalk.green('[Edgerunner - Browser] -> Browser Initialized for EdgeRunner'));
 			return browser;
 		} catch (error) {

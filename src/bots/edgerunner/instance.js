@@ -3,6 +3,11 @@ import fs from "fs/promises";
 import chalk from "chalk";
 
 async function main() {
+	const sendLog = (message) => {
+		if (process.send) {
+			process.send({ type: 'log', message });
+		}
+	};
 	const configPath = process.env.CONFIG_PATH;
 	if (!configPath) {
 		console.error('[BotRunner] No CONFIG_PATH provided');
@@ -35,6 +40,8 @@ async function main() {
 		});
 	} catch (error) {
 		console.error('[BotRunner] Failed to start bot:', error);
+		const startupFailureMessage = `🛑 **BOT STARTUP FAILED** 🛑\n**Reason:** ${error.message}`;
+		sendLog(startupFailureMessage);
 		try {
 			await fs.unlink(configPath);
 			console.log(chalk.yellow(`[BotRunner] Cleaned up config for failed bot at ${configPath}`));

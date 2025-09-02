@@ -23,7 +23,23 @@ export default
 			.addNumberOption(option =>
 				option.setName("fixedstake")
 					.setDescription("Fixed stake value")
-					.setRequired(true)),
+					.setRequired(true))
+			.addBooleanOption(option =>
+				option.setName("use-proxy")
+					.setDescription("Enable to use a proxy for this bot (default: false)")
+					.setRequired(false)) // Optional
+			.addStringOption(option =>
+				option.setName("proxy-ip")
+					.setDescription("The proxy ip + port number (e.g., 109.107.54.237:8080)")
+					.setRequired(false)) // Optional
+			.addStringOption(option =>
+				option.setName("proxy-user")
+					.setDescription("Username for the proxy (only if use-proxy is true)")
+					.setRequired(false)) // Optional
+			.addStringOption(option =>
+				option.setName("proxy-pass")
+					.setDescription("Password for the proxy (only if use-proxy is true)")
+					.setRequired(false)),
 		async execute(interaction) {
 			await interaction.deferReply({ ephemeral: MessageFlags.Ephemeral });
 
@@ -31,6 +47,30 @@ export default
 			const password = interaction.options.getString("password");
 			const userId = interaction.options.getString("userid");
 			const fixedStake = interaction.options.getNumber("fixedstake");
+
+			const useProxy = interaction.options.getBoolean("use-proxy") ?? false;
+			const proxyIp = interaction.options.getString("proxy-ip");
+			const proxyUser = interaction.options.getString("proxy-user");
+			const proxyPass = interaction.options.getString("proxy-pass");
+
+			const payload = {
+				provider: { userId },
+				bookmaker: { username, password },
+				edgerunner: fixedStake ? { fixedStakeValue: fixedStake } : {}
+			};
+
+			if (useProxy) {
+				if (!proxyIp || !proxyUser || !proxyPass) {
+					return await interaction.editReply("❌ **Proxy Error:** If 'use-proxy' is true, you must provide a proxy username and password.");
+				}
+
+				payload.proxy = {
+					enabled: true,
+					ip: proxyIp,
+					username: proxyUser,
+					password: proxyPass
+				};
+			}
 
 			if (username.length !== 11 || !/^\d+$/.test(username)) {
 				return await interaction.editReply("❌ **Invalid Username:** Please provide a valid 11-digit phone number.");
@@ -40,11 +80,7 @@ export default
 				const response = await fetch(`${apiBase}/start`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						provider: { userId },
-						bookmaker: { username, password },
-						edgerunner: fixedStake ? { fixedStakeValue: fixedStake } : {}
-					})
+					body: JSON.stringify(payload)
 				});
 
 				const result = await response.json();
