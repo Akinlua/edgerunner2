@@ -26,10 +26,10 @@ const baseConfig = {
 		delay: 10 // 30 to slow
 	},
 	proxy: {
-		enabled: true, 
-		ip: "109.107.54.237:6001",
-		password: "11453606",
-		username: "UKwokPecgB"
+		enabled: false, 
+		ip: "",
+		password: "",
+		username: ""
 	}
 };
 
