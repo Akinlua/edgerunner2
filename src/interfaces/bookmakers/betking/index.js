@@ -400,7 +400,8 @@ class BetKingBookmaker {
 			username: username,
 			password: password,
 			url: "https://m.betking.com/my-accounts/login?urlAfterLogin=/",
-			signedInUrl: "https://m.betking.com/my-accounts/login",
+			// signedInUrl: "https://m.betking.com/my-accounts/login",
+			signedInUrl: "https://m.betking.com/",
 			location: "/",
 			action: ""
 		};
@@ -435,10 +436,10 @@ class BetKingBookmaker {
 			await page.keyboard.press('Enter');
 
 			await page.waitForNavigation({ waitUntil: 'load', timeout: 30000 });
-			if (page.url() === signinData.signedInUrl) {
+			if (page.url().startsWith(signinData.signedInUrl)) {
 				console.log(`[Bookmaker] Logged in ${username}`);
 			} else {
-				throw new Error(`[Bookmaker] Login failed ${username}`);
+				throw new Error(`Login failed. Expected to be at ${signinData.signedInUrl} but ended up at ${page.url()}`);
 			}
 
 			const cookies = await page.cookies();
