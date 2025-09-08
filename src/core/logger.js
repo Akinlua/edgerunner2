@@ -16,9 +16,9 @@ class Logger {
 
 			for (const marketName in groupedMatches) {
 				const marketGroup = groupedMatches[marketName];
-				const header = `${marketName.toUpperCase()}${'─'.repeat(50 - marketName.length)}\n`;
-				const subHeader = `Sel.             B-Odds   P-Odds   Value\n`;
-				const divider = `${'─'.repeat(50)}\n`;
+				const header = `${marketName.toUpperCase()}${'─'.repeat(60 - marketName.length)}\n`;
+				const subHeader = `Sel.              B-Odds   P-Odds   T-Odds   Value\n`; // <-- New Header
+				const divider = `${'─'.repeat(60)}\n`;
 
 				let marketLogContent = '';
 				let consoleMarketLogContent = '';
@@ -30,17 +30,20 @@ class Logger {
 					if (specialValue && specialValue != 0) {
 						logSelectionName = `${logSelectionName} ${specialValue}`;
 					}
+
 					const bOdd = valuedBet.bookmaker.selection.odd.value.toFixed(2);
 					const pOdd = valuedBet.provider.matchedOutcome.odd.toFixed(2);
+					const tOdd = valuedBet.trueOdd ? valuedBet.trueOdd.toFixed(2) : 'N/A';
 					const value = isFinite(valuedBet.value) ? valuedBet.value.toFixed(2) + '%' : 'N/A';
 
 					const selectionCol = logSelectionName.padEnd(18);
 					const bOddsCol = `@ ${bOdd}`.padEnd(9);
 					const pOddsCol = pOdd.padEnd(9);
+					const tOddsCol = tOdd.padEnd(9); // <-- New Column
 
-					marketLogContent += `${selectionCol} ${bOddsCol} ${pOddsCol} ${value}\n`;
+					marketLogContent += `${selectionCol} ${bOddsCol} ${pOddsCol} ${tOddsCol} ${value}\n`;
 					const valueColor = valuedBet.value > 0 ? chalk.green : chalk.red;
-					consoleMarketLogContent += `${selectionCol} ${bOddsCol} ${pOddsCol} ${valueColor(value)}\n`;
+					consoleMarketLogContent += `${selectionCol} ${bOddsCol} ${pOddsCol} ${tOddsCol} ${valueColor(value)}\n`;
 				});
 
 				marketLogs.push(header + subHeader + divider + marketLogContent);
@@ -65,7 +68,7 @@ class Logger {
 	logBestInMarket(bestBetsForTable) {
 		const intro = `[Edgerunner] **BEST IN EACH MARKET**\n`;
 		let tableLog = '```\n';
-		tableLog += `Mkt         Sel                Val\n`; 
+		tableLog += `Mkt         Sel                Val\n`;
 		tableLog += `─────────── ────────────────── ─────────\n`;
 
 		bestBetsForTable.forEach(best => {
@@ -156,6 +159,8 @@ class Logger {
 		log += `Selection: ${logSelectionName} @ ${valueBet.bookmakerOdds.toFixed(2)}\n`;
 		log += `Value    : ${valueBet.value.toFixed(2)}%\n`;
 		log += `Stake    : ₦${stakeAmount.toFixed(2)}\n`;
+		log += `Provider Odd: ${providerOdd.toFixed(2)}\n`; // For comparison
+		log += `True Odd    : ${valueBet.trueOdd.toFixed(2)}\n`; // The value you wanted
 		log += '```';
 
 		this.sender(intro + log);
