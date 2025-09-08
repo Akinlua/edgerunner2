@@ -48,6 +48,7 @@ class BetKingBookmaker {
 							"-3.5": "0 : 3",
 							"-2.5": "0 : 2",
 							"-1.5": "0 : 1",
+							"0.5": "1 : 0",
 							"1.5": "2 : 0",
 							"2.5": "3 : 0",
 							"3.5": "4 : 0",
@@ -56,7 +57,7 @@ class BetKingBookmaker {
 							"6.5": "7 : 0",
 							specials: {
 								"0.0": { name: "Draw No Bet", outcome: { home: "1 DNB", away: "2 DNB" } },
-								"0.5": { name: "Double Chance", outcome: { home: "1X", away: "X2" } },
+								// "0.5": { name: "Double Chance", outcome: { home: "1X", away: "X2" } },
 							}
 						}
 					},
@@ -376,9 +377,14 @@ class BetKingBookmaker {
 				}
 			});
 
-			const loaderData = remixContentDetails.state.loaderData;
-			const matchEventDetails = loaderData["routes/($locale).sports.prematch.$matchId.$eventName.($areaId)._index"].event;
-			const matchEventId = matchEventDetails.id;
+			const loaderData = remixContentDetails?.state?.loaderData;
+			const matchEventDetails = loaderData["routes/($locale).sports.prematch.$matchId.$eventName.($areaId)._index"]?.event;
+			const matchEventId = matchEventDetails?.id;
+
+			if (!matchEventDetails || !matchEventId) {
+				console.warn(chalk.yellow('[Bookmaker] Could not find complete event data in Remix context for this match. Skipping.'));
+				return null;
+			}
 
 			if (matchEventId != eventId) {
 				throw new Error("Event Id mismatch, Event-Id does not match fetched Match-Details-Event-Id");
