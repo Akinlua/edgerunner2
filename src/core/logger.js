@@ -159,8 +159,6 @@ class Logger {
 		log += `Selection: ${logSelectionName} @ ${valueBet.bookmakerOdds.toFixed(2)}\n`;
 		log += `Value    : ${valueBet.value.toFixed(2)}%\n`;
 		log += `Stake    : ₦${stakeAmount.toFixed(2)}\n`;
-		log += `Provider Odd: ${providerOdd.toFixed(2)}\n`; // For comparison
-		log += `True Odd    : ${valueBet.trueOdd.toFixed(2)}\n`; // The value you wanted
 		log += '```';
 
 		this.sender(intro + log);
