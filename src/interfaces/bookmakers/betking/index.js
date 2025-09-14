@@ -44,275 +44,279 @@ class BetKingBookmaker {
 						bridge: {
 							// --- Positive Asian Handicaps (+ AH) ---
 							"0.5": {
-								home: {
-									provider: { line: "0.5", outcome: "home" },
-									bookmaker: { specialValue: "1:0", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "-1.5", outcome: "home" },
-									bookmaker: { specialValue: "1:0", outcome: "Away" }
-								}
+								home: { provider: { line: "0.5", outcome: "home" }, bookmaker: { specialValue: "1:0", outcome: "Home" } },
+								away: { provider: { line: "1.5", outcome: "away" }, bookmaker: { specialValue: "1:0", outcome: "Away" } }
 							},
 							"1.5": {
-								home: {
-									provider: { line: "1.5", outcome: "home" },
-									bookmaker: { specialValue: "2:0", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "-2.5", outcome: "home" },
-									bookmaker: { specialValue: "2:0", outcome: "Away" }
-								}
+								home: { provider: { line: "1.5", outcome: "home" }, bookmaker: { specialValue: "2:0", outcome: "Home" } },
+								away: { provider: { line: "2.5", outcome: "away" }, bookmaker: { specialValue: "2:0", outcome: "Away" } }
 							},
 							"2.5": {
-								home: {
-									provider: { line: "2.5", outcome: "home" },
-									bookmaker: { specialValue: "3:0", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "-3.5", outcome: "home" },
-									bookmaker: { specialValue: "3:0", outcome: "Away" }
-								}
+								home: { provider: { line: "2.5", outcome: "home" }, bookmaker: { specialValue: "3:0", outcome: "Home" } },
+								away: { provider: { line: "3.5", outcome: "away" }, bookmaker: { specialValue: "3:0", outcome: "Away" } }
 							},
 							"3.5": {
-								home: {
-									provider: { line: "3.5", outcome: "home" },
-									bookmaker: { specialValue: "4:0", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "-4.5", outcome: "home" },
-									bookmaker: { specialValue: "4:0", outcome: "Away" }
-								}
+								home: { provider: { line: "3.5", outcome: "home" }, bookmaker: { specialValue: "4:0", outcome: "Home" } },
+								away: { provider: { line: "4.5", outcome: "away" }, bookmaker: { specialValue: "4:0", outcome: "Away" } }
 							},
 							"4.5": {
-								home: {
-									provider: { line: "4.5", outcome: "home" },
-									bookmaker: { specialValue: "5:0", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "-5.5", outcome: "home" },
-									bookmaker: { specialValue: "5:0", outcome: "Away" }
-								}
+								home: { provider: { line: "4.5", outcome: "home" }, bookmaker: { specialValue: "5:0", outcome: "Home" } },
+								away: { provider: { line: "5.5", outcome: "away" }, bookmaker: { specialValue: "5:0", outcome: "Away" } }
 							},
 							"5.5": {
-								home: {
-									provider: { line: "5.5", outcome: "home" },
-									bookmaker: { specialValue: "6:0", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "-6.5", outcome: "home" },
-									bookmaker: { specialValue: "6:0", outcome: "Away" }
-								}
+								home: { provider: { line: "5.5", outcome: "home" }, bookmaker: { specialValue: "6:0", outcome: "Home" } },
+								away: { provider: { line: "6.5", outcome: "away" }, bookmaker: { specialValue: "6:0", outcome: "Away" } }
 							},
 							"6.5": {
-								home: {
-									provider: { line: "6.5", outcome: "home" },
-									bookmaker: { specialValue: "7:0", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "-7.5", outcome: "home" },
-									bookmaker: { specialValue: "7:0", outcome: "Away" }
-								}
+								home: { provider: { line: "6.5", outcome: "home" }, bookmaker: { specialValue: "7:0", outcome: "Home" } },
+								away: { provider: { line: "7.5", outcome: "away" }, bookmaker: { specialValue: "7:0", outcome: "Away" } }
 							},
 
 							// --- Negative Asian Handicaps (- AH) ---
 							"-1.5": {
-								home: {
-									provider: { line: "-1.5", outcome: "home" },
-									bookmaker: { specialValue: "0:1", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "0.5", outcome: "away" },
-									bookmaker: { specialValue: "0:1", outcome: "Away" }
-								}
+								home: { provider: { line: "-1.5", outcome: "home" }, bookmaker: { specialValue: "0:1", outcome: "Home" } },
+								away: { provider: { line: "-0.5", outcome: "away" }, bookmaker: { specialValue: "0:1", outcome: "Away" } }
 							},
 							"-2.5": {
-								home: {
-									provider: { line: "-2.5", outcome: "home" },
-									bookmaker: { specialValue: "0:2", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "1.5", outcome: "away" },
-									bookmaker: { specialValue: "0:2", outcome: "Away" }
-								}
+								home: { provider: { line: "-2.5", outcome: "home" }, bookmaker: { specialValue: "0:2", outcome: "Home" } },
+								away: { provider: { line: "-1.5", outcome: "away" }, bookmaker: { specialValue: "0:2", outcome: "Away" } }
 							},
 							"-3.5": {
-								home: {
-									provider: { line: "-3.5", outcome: "home" },
-									bookmaker: { specialValue: "0:3", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "2.5", outcome: "away" },
-									bookmaker: { specialValue: "0:3", outcome: "Away" }
-								}
+								home: { provider: { line: "-3.5", outcome: "home" }, bookmaker: { specialValue: "0:3", outcome: "Home" } },
+								away: { provider: { line: "-2.5", outcome: "away" }, bookmaker: { specialValue: "0:3", outcome: "Away" } }
 							},
 							"-4.5": {
-								home: {
-									provider: { line: "-4.5", outcome: "home" },
-									bookmaker: { specialValue: "0:4", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "3.5", outcome: "away" },
-									bookmaker: { specialValue: "0:4", outcome: "Away" }
-								}
+								home: { provider: { line: "-4.5", outcome: "home" }, bookmaker: { specialValue: "0:4", outcome: "Home" } },
+								away: { provider: { line: "-3.5", outcome: "away" }, bookmaker: { specialValue: "0:4", outcome: "Away" } }
 							},
 							"-5.5": {
-								home: {
-									provider: { line: "-5.5", outcome: "home" },
-									bookmaker: { specialValue: "0:5", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "4.5", outcome: "away" },
-									bookmaker: { specialValue: "0:5", outcome: "Away" }
-								}
+								home: { provider: { line: "-5.5", outcome: "home" }, bookmaker: { specialValue: "0:5", outcome: "Home" } },
+								away: { provider: { line: "-4.5", outcome: "away" }, bookmaker: { specialValue: "0:5", outcome: "Away" } }
 							},
 							"-6.5": {
-								home: {
-									provider: { line: "-6.5", outcome: "home" },
-									bookmaker: { specialValue: "0:6", outcome: "Home" }
-								},
-								away: {
-									provider: { line: "5.5", outcome: "away" },
-									bookmaker: { specialValue: "0:6", outcome: "Away" }
-								}
+								home: { provider: { line: "-6.5", outcome: "home" }, bookmaker: { specialValue: "0:6", outcome: "Home" } },
+								away: { provider: { line: "-5.5", outcome: "away" }, bookmaker: { specialValue: "0:6", outcome: "Away" } }
 							},
 
 							// --- Special Cases ---
 							"0.0": {
-								home: {
-									provider: { line: "0.0", outcome: "home" },
-									bookmaker: { marketName: "Draw No Bet", outcome: "1 DNB" }
-								},
-								away: {
-									provider: { line: "0.0", outcome: "away" },
-									bookmaker: { marketName: "Draw No Bet", outcome: "2 DNB" }
-								}
-							},
-							// "-0.5": {
-							// 	home: {
-							// 		provider: { line: "-0.5", outcome: "home" },
-							// 		bookmaker: { marketName: "1X2", outcome: "1" } 
-							// 	},
-							// 	away: {
-							// 		provider: { line: "-0.5", outcome: "away" },
-							// 		bookmaker: { marketName: "Double Chance", outcome: "X2" } 
-							// 	}
-							// }
+								home: { provider: { line: "0.0", outcome: "home" }, bookmaker: { specialValue: "0", outcome: "1 DNB" } },
+								away: { provider: { line: "0.0", outcome: "away" }, bookmaker: { specialValue: "0", outcome: "2 DNB" } }
+							}
 						}
 					},
 					'3': {
 						'*': { label: 'Handicap (Incl. Overtime)', outcome: { home: "1 AH", away: "2 AH" } },
 						bridge: {
-							// Negative Handicaps (-50.0 to -0.5)
-							"1.5": { home: { specialValue: "1.5 : 0", outcome: "1 AH" }, away: { specialValue: "1.5 : 0", outcome: "2 AH" } },
-							"2.5": { home: { specialValue: "2.5 : 0", outcome: "1 AH" }, away: { specialValue: "2.5 : 0", outcome: "2 AH" } },
-							"3.5": { home: { specialValue: "3.5 : 0", outcome: "1 AH" }, away: { specialValue: "3.5 : 0", outcome: "2 AH" } },
-							"4.5": { home: { specialValue: "4.5 : 0", outcome: "1 AH" }, away: { specialValue: "4.5 : 0", outcome: "2 AH" } },
-							"5.5": { home: { specialValue: "5.5 : 0", outcome: "1 AH" }, away: { specialValue: "5.5 : 0", outcome: "2 AH" } },
-							"6.5": { home: { specialValue: "6.5 : 0", outcome: "1 AH" }, away: { specialValue: "6.5 : 0", outcome: "2 AH" } },
-							"7.5": { home: { specialValue: "7.5 : 0", outcome: "1 AH" }, away: { specialValue: "7.5 : 0", outcome: "2 AH" } },
-							"8.5": { home: { specialValue: "8.5 : 0", outcome: "1 AH" }, away: { specialValue: "8.5 : 0", outcome: "2 AH" } },
-							"9.5": { home: { specialValue: "9.5 : 0", outcome: "1 AH" }, away: { specialValue: "9.5 : 0", outcome: "2 AH" } },
-							"10.5": { home: { specialValue: "10.5 : 0", outcome: "1 AH" }, away: { specialValue: "10.5 : 0", outcome: "2 AH" } },
-							"11.5": { home: { specialValue: "11.5 : 0", outcome: "1 AH" }, away: { specialValue: "11.5 : 0", outcome: "2 AH" } },
-							"12.5": { home: { specialValue: "12.5 : 0", outcome: "1 AH" }, away: { specialValue: "12.5 : 0", outcome: "2 AH" } },
-							"13.5": { home: { specialValue: "13.5 : 0", outcome: "1 AH" }, away: { specialValue: "13.5 : 0", outcome: "2 AH" } },
-							"14.5": { home: { specialValue: "14.5 : 0", outcome: "1 AH" }, away: { specialValue: "14.5 : 0", outcome: "2 AH" } },
-							"15.5": { home: { specialValue: "15.5 : 0", outcome: "1 AH" }, away: { specialValue: "15.5 : 0", outcome: "2 AH" } },
-							"16.5": { home: { specialValue: "16.5 : 0", outcome: "1 AH" }, away: { specialValue: "16.5 : 0", outcome: "2 AH" } },
-							"17.5": { home: { specialValue: "17.5 : 0", outcome: "1 AH" }, away: { specialValue: "17.5 : 0", outcome: "2 AH" } },
-							"18.5": { home: { specialValue: "18.5 : 0", outcome: "1 AH" }, away: { specialValue: "18.5 : 0", outcome: "2 AH" } },
-							"19.5": { home: { specialValue: "19.5 : 0", outcome: "1 AH" }, away: { specialValue: "19.5 : 0", outcome: "2 AH" } },
-							"20.5": { home: { specialValue: "20.5 : 0", outcome: "1 AH" }, away: { specialValue: "20.5 : 0", outcome: "2 AH" } },
-							"21.5": { home: { specialValue: "21.5 : 0", outcome: "1 AH" }, away: { specialValue: "21.5 : 0", outcome: "2 AH" } },
-							"22.5": { home: { specialValue: "22.5 : 0", outcome: "1 AH" }, away: { specialValue: "22.5 : 0", outcome: "2 AH" } },
-							"23.5": { home: { specialValue: "23.5 : 0", outcome: "1 AH" }, away: { specialValue: "23.5 : 0", outcome: "2 AH" } },
-							"24.5": { home: { specialValue: "24.5 : 0", outcome: "1 AH" }, away: { specialValue: "24.5 : 0", outcome: "2 AH" } },
-							"25.5": { home: { specialValue: "25.5 : 0", outcome: "1 AH" }, away: { specialValue: "25.5 : 0", outcome: "2 AH" } },
-							"26.5": { home: { specialValue: "26.5 : 0", outcome: "1 AH" }, away: { specialValue: "26.5 : 0", outcome: "2 AH" } },
-							"27.5": { home: { specialValue: "27.5 : 0", outcome: "1 AH" }, away: { specialValue: "27.5 : 0", outcome: "2 AH" } },
-							"28.5": { home: { specialValue: "28.5 : 0", outcome: "1 AH" }, away: { specialValue: "28.5 : 0", outcome: "2 AH" } },
-							"29.5": { home: { specialValue: "29.5 : 0", outcome: "1 AH" }, away: { specialValue: "29.5 : 0", outcome: "2 AH" } },
-							"30.5": { home: { specialValue: "30.5 : 0", outcome: "1 AH" }, away: { specialValue: "30.5 : 0", outcome: "2 AH" } },
-							"31.5": { home: { specialValue: "31.5 : 0", outcome: "1 AH" }, away: { specialValue: "31.5 : 0", outcome: "2 AH" } },
-							"32.5": { home: { specialValue: "32.5 : 0", outcome: "1 AH" }, away: { specialValue: "32.5 : 0", outcome: "2 AH" } },
-							"33.5": { home: { specialValue: "33.5 : 0", outcome: "1 AH" }, away: { specialValue: "33.5 : 0", outcome: "2 AH" } },
-							"34.5": { home: { specialValue: "34.5 : 0", outcome: "1 AH" }, away: { specialValue: "34.5 : 0", outcome: "2 AH" } },
-							"35.5": { home: { specialValue: "35.5 : 0", outcome: "1 AH" }, away: { specialValue: "35.5 : 0", outcome: "2 AH" } },
-							"36.5": { home: { specialValue: "36.5 : 0", outcome: "1 AH" }, away: { specialValue: "36.5 : 0", outcome: "2 AH" } },
-							"37.5": { home: { specialValue: "37.5 : 0", outcome: "1 AH" }, away: { specialValue: "37.5 : 0", outcome: "2 AH" } },
-							"38.5": { home: { specialValue: "38.5 : 0", outcome: "1 AH" }, away: { specialValue: "38.5 : 0", outcome: "2 AH" } },
-							"39.5": { home: { specialValue: "39.5 : 0", outcome: "1 AH" }, away: { specialValue: "39.5 : 0", outcome: "2 AH" } },
-							"40.5": { home: { specialValue: "40.5 : 0", outcome: "1 AH" }, away: { specialValue: "40.5 : 0", outcome: "2 AH" } },
-							"41.5": { home: { specialValue: "41.5 : 0", outcome: "1 AH" }, away: { specialValue: "41.5 : 0", outcome: "2 AH" } },
-							"42.5": { home: { specialValue: "42.5 : 0", outcome: "1 AH" }, away: { specialValue: "42.5 : 0", outcome: "2 AH" } },
-							"43.5": { home: { specialValue: "43.5 : 0", outcome: "1 AH" }, away: { specialValue: "43.5 : 0", outcome: "2 AH" } },
-							"44.5": { home: { specialValue: "44.5 : 0", outcome: "1 AH" }, away: { specialValue: "44.5 : 0", outcome: "2 AH" } },
-							"45.5": { home: { specialValue: "45.5 : 0", outcome: "1 AH" }, away: { specialValue: "45.5 : 0", outcome: "2 AH" } },
-							"46.5": { home: { specialValue: "46.5 : 0", outcome: "1 AH" }, away: { specialValue: "46.5 : 0", outcome: "2 AH" } },
-							"47.5": { home: { specialValue: "47.5 : 0", outcome: "1 AH" }, away: { specialValue: "47.5 : 0", outcome: "2 AH" } },
-							"48.5": { home: { specialValue: "48.5 : 0", outcome: "1 AH" }, away: { specialValue: "48.5 : 0", outcome: "2 AH" } },
-							"49.5": { home: { specialValue: "49.5 : 0", outcome: "1 AH" }, away: { specialValue: "49.5 : 0", outcome: "2 AH" } },
-							"50.0": { home: { specialValue: "50.0 : 0", outcome: "1 AH" }, away: { specialValue: "50.0 : 0", outcome: "2 AH" } },
+							// --- SPECIAL CASE
+							"0.0": {
+								home: { provider: { line: "0.0", outcome: "home" }, bookmaker: { specialValue: "0", outcome: "1 DNB" } },
+								away: { provider: { line: "0.0", outcome: "away" }, bookmaker: { specialValue: "0", outcome: "2 DNB" } }
+							},
+
+							// --- Positive Handicaps (+0.5 to +50.0) ---
+							"0.5": { home: { provider: { line: "0.5", outcome: "home" }, bookmaker: { specialValue: "0.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "0.5", outcome: "away" }, bookmaker: { specialValue: "0.5 : 0", outcome: "2 AH" } } },
+							"1.0": { home: { provider: { line: "1.0", outcome: "home" }, bookmaker: { specialValue: "1.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "1.0", outcome: "away" }, bookmaker: { specialValue: "1.0 : 0", outcome: "2 AH" } } },
+							"1.5": { home: { provider: { line: "1.5", outcome: "home" }, bookmaker: { specialValue: "1.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "1.5", outcome: "away" }, bookmaker: { specialValue: "1.5 : 0", outcome: "2 AH" } } },
+							"2.0": { home: { provider: { line: "2.0", outcome: "home" }, bookmaker: { specialValue: "2.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "2.0", outcome: "away" }, bookmaker: { specialValue: "2.0 : 0", outcome: "2 AH" } } },
+							"2.5": { home: { provider: { line: "2.5", outcome: "home" }, bookmaker: { specialValue: "2.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "2.5", outcome: "away" }, bookmaker: { specialValue: "2.5 : 0", outcome: "2 AH" } } },
+							"3.0": { home: { provider: { line: "3.0", outcome: "home" }, bookmaker: { specialValue: "3.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "3.0", outcome: "away" }, bookmaker: { specialValue: "3.0 : 0", outcome: "2 AH" } } },
+							"3.5": { home: { provider: { line: "3.5", outcome: "home" }, bookmaker: { specialValue: "3.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "3.5", outcome: "away" }, bookmaker: { specialValue: "3.5 : 0", outcome: "2 AH" } } },
+							"4.0": { home: { provider: { line: "4.0", outcome: "home" }, bookmaker: { specialValue: "4.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "4.0", outcome: "away" }, bookmaker: { specialValue: "4.0 : 0", outcome: "2 AH" } } },
+							"4.5": { home: { provider: { line: "4.5", outcome: "home" }, bookmaker: { specialValue: "4.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "4.5", outcome: "away" }, bookmaker: { specialValue: "4.5 : 0", outcome: "2 AH" } } },
+							"5.0": { home: { provider: { line: "5.0", outcome: "home" }, bookmaker: { specialValue: "5.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "5.0", outcome: "away" }, bookmaker: { specialValue: "5.0 : 0", outcome: "2 AH" } } },
+							"5.5": { home: { provider: { line: "5.5", outcome: "home" }, bookmaker: { specialValue: "5.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "5.5", outcome: "away" }, bookmaker: { specialValue: "5.5 : 0", outcome: "2 AH" } } },
+							"6.0": { home: { provider: { line: "6.0", outcome: "home" }, bookmaker: { specialValue: "6.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "6.0", outcome: "away" }, bookmaker: { specialValue: "6.0 : 0", outcome: "2 AH" } } },
+							"6.5": { home: { provider: { line: "6.5", outcome: "home" }, bookmaker: { specialValue: "6.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "6.5", outcome: "away" }, bookmaker: { specialValue: "6.5 : 0", outcome: "2 AH" } } },
+							"7.0": { home: { provider: { line: "7.0", outcome: "home" }, bookmaker: { specialValue: "7.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "7.0", outcome: "away" }, bookmaker: { specialValue: "7.0 : 0", outcome: "2 AH" } } },
+							"7.5": { home: { provider: { line: "7.5", outcome: "home" }, bookmaker: { specialValue: "7.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "7.5", outcome: "away" }, bookmaker: { specialValue: "7.5 : 0", outcome: "2 AH" } } },
+							"8.0": { home: { provider: { line: "8.0", outcome: "home" }, bookmaker: { specialValue: "8.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "8.0", outcome: "away" }, bookmaker: { specialValue: "8.0 : 0", outcome: "2 AH" } } },
+							"8.5": { home: { provider: { line: "8.5", outcome: "home" }, bookmaker: { specialValue: "8.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "8.5", outcome: "away" }, bookmaker: { specialValue: "8.5 : 0", outcome: "2 AH" } } },
+							"9.0": { home: { provider: { line: "9.0", outcome: "home" }, bookmaker: { specialValue: "9.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "9.0", outcome: "away" }, bookmaker: { specialValue: "9.0 : 0", outcome: "2 AH" } } },
+							"9.5": { home: { provider: { line: "9.5", outcome: "home" }, bookmaker: { specialValue: "9.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "9.5", outcome: "away" }, bookmaker: { specialValue: "9.5 : 0", outcome: "2 AH" } } },
+							"10.0": { home: { provider: { line: "10.0", outcome: "home" }, bookmaker: { specialValue: "10.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "10.0", outcome: "away" }, bookmaker: { specialValue: "10.0 : 0", outcome: "2 AH" } } },
+							"10.5": { home: { provider: { line: "10.5", outcome: "home" }, bookmaker: { specialValue: "10.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "10.5", outcome: "away" }, bookmaker: { specialValue: "10.5 : 0", outcome: "2 AH" } } },
+							"11.0": { home: { provider: { line: "11.0", outcome: "home" }, bookmaker: { specialValue: "11.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "11.0", outcome: "away" }, bookmaker: { specialValue: "11.0 : 0", outcome: "2 AH" } } },
+							"11.5": { home: { provider: { line: "11.5", outcome: "home" }, bookmaker: { specialValue: "11.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "11.5", outcome: "away" }, bookmaker: { specialValue: "11.5 : 0", outcome: "2 AH" } } },
+							"12.0": { home: { provider: { line: "12.0", outcome: "home" }, bookmaker: { specialValue: "12.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "12.0", outcome: "away" }, bookmaker: { specialValue: "12.0 : 0", outcome: "2 AH" } } },
+							"12.5": { home: { provider: { line: "12.5", outcome: "home" }, bookmaker: { specialValue: "12.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "12.5", outcome: "away" }, bookmaker: { specialValue: "12.5 : 0", outcome: "2 AH" } } },
+							"13.0": { home: { provider: { line: "13.0", outcome: "home" }, bookmaker: { specialValue: "13.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "13.0", outcome: "away" }, bookmaker: { specialValue: "13.0 : 0", outcome: "2 AH" } } },
+							"13.5": { home: { provider: { line: "13.5", outcome: "home" }, bookmaker: { specialValue: "13.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "13.5", outcome: "away" }, bookmaker: { specialValue: "13.5 : 0", outcome: "2 AH" } } },
+							"14.0": { home: { provider: { line: "14.0", outcome: "home" }, bookmaker: { specialValue: "14.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "14.0", outcome: "away" }, bookmaker: { specialValue: "14.0 : 0", outcome: "2 AH" } } },
+							"14.5": { home: { provider: { line: "14.5", outcome: "home" }, bookmaker: { specialValue: "14.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "14.5", outcome: "away" }, bookmaker: { specialValue: "14.5 : 0", outcome: "2 AH" } } },
+							"15.0": { home: { provider: { line: "15.0", outcome: "home" }, bookmaker: { specialValue: "15.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "15.0", outcome: "away" }, bookmaker: { specialValue: "15.0 : 0", outcome: "2 AH" } } },
+							"15.5": { home: { provider: { line: "15.5", outcome: "home" }, bookmaker: { specialValue: "15.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "15.5", outcome: "away" }, bookmaker: { specialValue: "15.5 : 0", outcome: "2 AH" } } },
+							"16.0": { home: { provider: { line: "16.0", outcome: "home" }, bookmaker: { specialValue: "16.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "16.0", outcome: "away" }, bookmaker: { specialValue: "16.0 : 0", outcome: "2 AH" } } },
+							"16.5": { home: { provider: { line: "16.5", outcome: "home" }, bookmaker: { specialValue: "16.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "16.5", outcome: "away" }, bookmaker: { specialValue: "16.5 : 0", outcome: "2 AH" } } },
+							"17.0": { home: { provider: { line: "17.0", outcome: "home" }, bookmaker: { specialValue: "17.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "17.0", outcome: "away" }, bookmaker: { specialValue: "17.0 : 0", outcome: "2 AH" } } },
+							"17.5": { home: { provider: { line: "17.5", outcome: "home" }, bookmaker: { specialValue: "17.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "17.5", outcome: "away" }, bookmaker: { specialValue: "17.5 : 0", outcome: "2 AH" } } },
+							"18.0": { home: { provider: { line: "18.0", outcome: "home" }, bookmaker: { specialValue: "18.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "18.0", outcome: "away" }, bookmaker: { specialValue: "18.0 : 0", outcome: "2 AH" } } },
+							"18.5": { home: { provider: { line: "18.5", outcome: "home" }, bookmaker: { specialValue: "18.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "18.5", outcome: "away" }, bookmaker: { specialValue: "18.5 : 0", outcome: "2 AH" } } },
+							"19.0": { home: { provider: { line: "19.0", outcome: "home" }, bookmaker: { specialValue: "19.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "19.0", outcome: "away" }, bookmaker: { specialValue: "19.0 : 0", outcome: "2 AH" } } },
+							"19.5": { home: { provider: { line: "19.5", outcome: "home" }, bookmaker: { specialValue: "19.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "19.5", outcome: "away" }, bookmaker: { specialValue: "19.5 : 0", outcome: "2 AH" } } },
+							"20.0": { home: { provider: { line: "20.0", outcome: "home" }, bookmaker: { specialValue: "20.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "20.0", outcome: "away" }, bookmaker: { specialValue: "20.0 : 0", outcome: "2 AH" } } },
+							"20.5": { home: { provider: { line: "20.5", outcome: "home" }, bookmaker: { specialValue: "20.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "20.5", outcome: "away" }, bookmaker: { specialValue: "20.5 : 0", outcome: "2 AH" } } },
+							"21.0": { home: { provider: { line: "21.0", outcome: "home" }, bookmaker: { specialValue: "21.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "21.0", outcome: "away" }, bookmaker: { specialValue: "21.0 : 0", outcome: "2 AH" } } },
+							"21.5": { home: { provider: { line: "21.5", outcome: "home" }, bookmaker: { specialValue: "21.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "21.5", outcome: "away" }, bookmaker: { specialValue: "21.5 : 0", outcome: "2 AH" } } },
+							"22.0": { home: { provider: { line: "22.0", outcome: "home" }, bookmaker: { specialValue: "22.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "22.0", outcome: "away" }, bookmaker: { specialValue: "22.0 : 0", outcome: "2 AH" } } },
+							"22.5": { home: { provider: { line: "22.5", outcome: "home" }, bookmaker: { specialValue: "22.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "22.5", outcome: "away" }, bookmaker: { specialValue: "22.5 : 0", outcome: "2 AH" } } },
+							"23.0": { home: { provider: { line: "23.0", outcome: "home" }, bookmaker: { specialValue: "23.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "23.0", outcome: "away" }, bookmaker: { specialValue: "23.0 : 0", outcome: "2 AH" } } },
+							"23.5": { home: { provider: { line: "23.5", outcome: "home" }, bookmaker: { specialValue: "23.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "23.5", outcome: "away" }, bookmaker: { specialValue: "23.5 : 0", outcome: "2 AH" } } },
+							"24.0": { home: { provider: { line: "24.0", outcome: "home" }, bookmaker: { specialValue: "24.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "24.0", outcome: "away" }, bookmaker: { specialValue: "24.0 : 0", outcome: "2 AH" } } },
+							"24.5": { home: { provider: { line: "24.5", outcome: "home" }, bookmaker: { specialValue: "24.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "24.5", outcome: "away" }, bookmaker: { specialValue: "24.5 : 0", outcome: "2 AH" } } },
+							"25.0": { home: { provider: { line: "25.0", outcome: "home" }, bookmaker: { specialValue: "25.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "25.0", outcome: "away" }, bookmaker: { specialValue: "25.0 : 0", outcome: "2 AH" } } },
+							"25.5": { home: { provider: { line: "25.5", outcome: "home" }, bookmaker: { specialValue: "25.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "25.5", outcome: "away" }, bookmaker: { specialValue: "25.5 : 0", outcome: "2 AH" } } },
+							"26.0": { home: { provider: { line: "26.0", outcome: "home" }, bookmaker: { specialValue: "26.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "26.0", outcome: "away" }, bookmaker: { specialValue: "26.0 : 0", outcome: "2 AH" } } },
+							"26.5": { home: { provider: { line: "26.5", outcome: "home" }, bookmaker: { specialValue: "26.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "26.5", outcome: "away" }, bookmaker: { specialValue: "26.5 : 0", outcome: "2 AH" } } },
+							"27.0": { home: { provider: { line: "27.0", outcome: "home" }, bookmaker: { specialValue: "27.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "27.0", outcome: "away" }, bookmaker: { specialValue: "27.0 : 0", outcome: "2 AH" } } },
+							"27.5": { home: { provider: { line: "27.5", outcome: "home" }, bookmaker: { specialValue: "27.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "27.5", outcome: "away" }, bookmaker: { specialValue: "27.5 : 0", outcome: "2 AH" } } },
+							"28.0": { home: { provider: { line: "28.0", outcome: "home" }, bookmaker: { specialValue: "28.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "28.0", outcome: "away" }, bookmaker: { specialValue: "28.0 : 0", outcome: "2 AH" } } },
+							"28.5": { home: { provider: { line: "28.5", outcome: "home" }, bookmaker: { specialValue: "28.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "28.5", outcome: "away" }, bookmaker: { specialValue: "28.5 : 0", outcome: "2 AH" } } },
+							"29.0": { home: { provider: { line: "29.0", outcome: "home" }, bookmaker: { specialValue: "29.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "29.0", outcome: "away" }, bookmaker: { specialValue: "29.0 : 0", outcome: "2 AH" } } },
+							"29.5": { home: { provider: { line: "29.5", outcome: "home" }, bookmaker: { specialValue: "29.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "29.5", outcome: "away" }, bookmaker: { specialValue: "29.5 : 0", outcome: "2 AH" } } },
+							"30.0": { home: { provider: { line: "30.0", outcome: "home" }, bookmaker: { specialValue: "30.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "30.0", outcome: "away" }, bookmaker: { specialValue: "30.0 : 0", outcome: "2 AH" } } },
+							"30.5": { home: { provider: { line: "30.5", outcome: "home" }, bookmaker: { specialValue: "30.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "30.5", outcome: "away" }, bookmaker: { specialValue: "30.5 : 0", outcome: "2 AH" } } },
+							"31.0": { home: { provider: { line: "31.0", outcome: "home" }, bookmaker: { specialValue: "31.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "31.0", outcome: "away" }, bookmaker: { specialValue: "31.0 : 0", outcome: "2 AH" } } },
+							"31.5": { home: { provider: { line: "31.5", outcome: "home" }, bookmaker: { specialValue: "31.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "31.5", outcome: "away" }, bookmaker: { specialValue: "31.5 : 0", outcome: "2 AH" } } },
+							"32.0": { home: { provider: { line: "32.0", outcome: "home" }, bookmaker: { specialValue: "32.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "32.0", outcome: "away" }, bookmaker: { specialValue: "32.0 : 0", outcome: "2 AH" } } },
+							"32.5": { home: { provider: { line: "32.5", outcome: "home" }, bookmaker: { specialValue: "32.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "32.5", outcome: "away" }, bookmaker: { specialValue: "32.5 : 0", outcome: "2 AH" } } },
+							"33.0": { home: { provider: { line: "33.0", outcome: "home" }, bookmaker: { specialValue: "33.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "33.0", outcome: "away" }, bookmaker: { specialValue: "33.0 : 0", outcome: "2 AH" } } },
+							"33.5": { home: { provider: { line: "33.5", outcome: "home" }, bookmaker: { specialValue: "33.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "33.5", outcome: "away" }, bookmaker: { specialValue: "33.5 : 0", outcome: "2 AH" } } },
+							"34.0": { home: { provider: { line: "34.0", outcome: "home" }, bookmaker: { specialValue: "34.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "34.0", outcome: "away" }, bookmaker: { specialValue: "34.0 : 0", outcome: "2 AH" } } },
+							"34.5": { home: { provider: { line: "34.5", outcome: "home" }, bookmaker: { specialValue: "34.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "34.5", outcome: "away" }, bookmaker: { specialValue: "34.5 : 0", outcome: "2 AH" } } },
+							"35.0": { home: { provider: { line: "35.0", outcome: "home" }, bookmaker: { specialValue: "35.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "35.0", outcome: "away" }, bookmaker: { specialValue: "35.0 : 0", outcome: "2 AH" } } },
+							"35.5": { home: { provider: { line: "35.5", outcome: "home" }, bookmaker: { specialValue: "35.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "35.5", outcome: "away" }, bookmaker: { specialValue: "35.5 : 0", outcome: "2 AH" } } },
+							"36.0": { home: { provider: { line: "36.0", outcome: "home" }, bookmaker: { specialValue: "36.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "36.0", outcome: "away" }, bookmaker: { specialValue: "36.0 : 0", outcome: "2 AH" } } },
+							"36.5": { home: { provider: { line: "36.5", outcome: "home" }, bookmaker: { specialValue: "36.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "36.5", outcome: "away" }, bookmaker: { specialValue: "36.5 : 0", outcome: "2 AH" } } },
+							"37.0": { home: { provider: { line: "37.0", outcome: "home" }, bookmaker: { specialValue: "37.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "37.0", outcome: "away" }, bookmaker: { specialValue: "37.0 : 0", outcome: "2 AH" } } },
+							"37.5": { home: { provider: { line: "37.5", outcome: "home" }, bookmaker: { specialValue: "37.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "37.5", outcome: "away" }, bookmaker: { specialValue: "37.5 : 0", outcome: "2 AH" } } },
+							"38.0": { home: { provider: { line: "38.0", outcome: "home" }, bookmaker: { specialValue: "38.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "38.0", outcome: "away" }, bookmaker: { specialValue: "38.0 : 0", outcome: "2 AH" } } },
+							"38.5": { home: { provider: { line: "38.5", outcome: "home" }, bookmaker: { specialValue: "38.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "38.5", outcome: "away" }, bookmaker: { specialValue: "38.5 : 0", outcome: "2 AH" } } },
+							"39.0": { home: { provider: { line: "39.0", outcome: "home" }, bookmaker: { specialValue: "39.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "39.0", outcome: "away" }, bookmaker: { specialValue: "39.0 : 0", outcome: "2 AH" } } },
+							"39.5": { home: { provider: { line: "39.5", outcome: "home" }, bookmaker: { specialValue: "39.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "39.5", outcome: "away" }, bookmaker: { specialValue: "39.5 : 0", outcome: "2 AH" } } },
+							"40.0": { home: { provider: { line: "40.0", outcome: "home" }, bookmaker: { specialValue: "40.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "40.0", outcome: "away" }, bookmaker: { specialValue: "40.0 : 0", outcome: "2 AH" } } },
+							"40.5": { home: { provider: { line: "40.5", outcome: "home" }, bookmaker: { specialValue: "40.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "40.5", outcome: "away" }, bookmaker: { specialValue: "40.5 : 0", outcome: "2 AH" } } },
+							"41.0": { home: { provider: { line: "41.0", outcome: "home" }, bookmaker: { specialValue: "41.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "41.0", outcome: "away" }, bookmaker: { specialValue: "41.0 : 0", outcome: "2 AH" } } },
+							"41.5": { home: { provider: { line: "41.5", outcome: "home" }, bookmaker: { specialValue: "41.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "41.5", outcome: "away" }, bookmaker: { specialValue: "41.5 : 0", outcome: "2 AH" } } },
+							"42.0": { home: { provider: { line: "42.0", outcome: "home" }, bookmaker: { specialValue: "42.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "42.0", outcome: "away" }, bookmaker: { specialValue: "42.0 : 0", outcome: "2 AH" } } },
+							"42.5": { home: { provider: { line: "42.5", outcome: "home" }, bookmaker: { specialValue: "42.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "42.5", outcome: "away" }, bookmaker: { specialValue: "42.5 : 0", outcome: "2 AH" } } },
+							"43.0": { home: { provider: { line: "43.0", outcome: "home" }, bookmaker: { specialValue: "43.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "43.0", outcome: "away" }, bookmaker: { specialValue: "43.0 : 0", outcome: "2 AH" } } },
+							"43.5": { home: { provider: { line: "43.5", outcome: "home" }, bookmaker: { specialValue: "43.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "43.5", outcome: "away" }, bookmaker: { specialValue: "43.5 : 0", outcome: "2 AH" } } },
+							"44.0": { home: { provider: { line: "44.0", outcome: "home" }, bookmaker: { specialValue: "44.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "44.0", outcome: "away" }, bookmaker: { specialValue: "44.0 : 0", outcome: "2 AH" } } },
+							"44.5": { home: { provider: { line: "44.5", outcome: "home" }, bookmaker: { specialValue: "44.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "44.5", outcome: "away" }, bookmaker: { specialValue: "44.5 : 0", outcome: "2 AH" } } },
+							"45.0": { home: { provider: { line: "45.0", outcome: "home" }, bookmaker: { specialValue: "45.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "45.0", outcome: "away" }, bookmaker: { specialValue: "45.0 : 0", outcome: "2 AH" } } },
+							"45.5": { home: { provider: { line: "45.5", outcome: "home" }, bookmaker: { specialValue: "45.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "45.5", outcome: "away" }, bookmaker: { specialValue: "45.5 : 0", outcome: "2 AH" } } },
+							"46.0": { home: { provider: { line: "46.0", outcome: "home" }, bookmaker: { specialValue: "46.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "46.0", outcome: "away" }, bookmaker: { specialValue: "46.0 : 0", outcome: "2 AH" } } },
+							"46.5": { home: { provider: { line: "46.5", outcome: "home" }, bookmaker: { specialValue: "46.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "46.5", outcome: "away" }, bookmaker: { specialValue: "46.5 : 0", outcome: "2 AH" } } },
+							"47.0": { home: { provider: { line: "47.0", outcome: "home" }, bookmaker: { specialValue: "47.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "47.0", outcome: "away" }, bookmaker: { specialValue: "47.0 : 0", outcome: "2 AH" } } },
+							"47.5": { home: { provider: { line: "47.5", outcome: "home" }, bookmaker: { specialValue: "47.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "47.5", outcome: "away" }, bookmaker: { specialValue: "47.5 : 0", outcome: "2 AH" } } },
+							"48.0": { home: { provider: { line: "48.0", outcome: "home" }, bookmaker: { specialValue: "48.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "48.0", outcome: "away" }, bookmaker: { specialValue: "48.0 : 0", outcome: "2 AH" } } },
+							"48.5": { home: { provider: { line: "48.5", outcome: "home" }, bookmaker: { specialValue: "48.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "48.5", outcome: "away" }, bookmaker: { specialValue: "48.5 : 0", outcome: "2 AH" } } },
+							"49.0": { home: { provider: { line: "49.0", outcome: "home" }, bookmaker: { specialValue: "49.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "49.0", outcome: "away" }, bookmaker: { specialValue: "49.0 : 0", outcome: "2 AH" } } },
+							"49.5": { home: { provider: { line: "49.5", outcome: "home" }, bookmaker: { specialValue: "49.5 : 0", outcome: "1 AH" } }, away: { provider: { line: "49.5", outcome: "away" }, bookmaker: { specialValue: "49.5 : 0", outcome: "2 AH" } } },
+							"50.0": { home: { provider: { line: "50.0", outcome: "home" }, bookmaker: { specialValue: "50.0 : 0", outcome: "1 AH" } }, away: { provider: { line: "50.0", outcome: "away" }, bookmaker: { specialValue: "50.0 : 0", outcome: "2 AH" } } },
 
 							// --- Negative Handicaps (-0.5 to -50.0) ---
-							"-0.5": { home: { specialValue: "0 : 0.5", outcome: "1 AH" }, away: { specialValue: "0 : 0.5", outcome: "2 AH" } },
-							"-1.5": { home: { specialValue: "0 : 1.5", outcome: "1 AH" }, away: { specialValue: "0 : 1.5", outcome: "2 AH" } },
-							"-2.5": { home: { specialValue: "0 : 2.5", outcome: "1 AH" }, away: { specialValue: "0 : 2.5", outcome: "2 AH" } },
-							"-3.5": { home: { specialValue: "0 : 3.5", outcome: "1 AH" }, away: { specialValue: "0 : 3.5", outcome: "2 AH" } },
-							"-4.5": { home: { specialValue: "0 : 4.5", outcome: "1 AH" }, away: { specialValue: "0 : 4.5", outcome: "2 AH" } },
-							"-5.5": { home: { specialValue: "0 : 5.5", outcome: "1 AH" }, away: { specialValue: "0 : 5.5", outcome: "2 AH" } },
-							"-6.5": { home: { specialValue: "0 : 6.5", outcome: "1 AH" }, away: { specialValue: "0 : 6.5", outcome: "2 AH" } },
-							"-7.5": { home: { specialValue: "0 : 7.5", outcome: "1 AH" }, away: { specialValue: "0 : 7.5", outcome: "2 AH" } },
-							"-8.5": { home: { specialValue: "0 : 8.5", outcome: "1 AH" }, away: { specialValue: "0 : 8.5", outcome: "2 AH" } },
-							"-9.5": { home: { specialValue: "0 : 9.5", outcome: "1 AH" }, away: { specialValue: "0 : 9.5", outcome: "2 AH" } },
-							"-10.5": { home: { specialValue: "0 : 10.5", outcome: "1 AH" }, away: { specialValue: "0 : 10.5", outcome: "2 AH" } },
-							"-11.5": { home: { specialValue: "0 : 11.5", outcome: "1 AH" }, away: { specialValue: "0 : 11.5", outcome: "2 AH" } },
-							"-12.5": { home: { specialValue: "0 : 12.5", outcome: "1 AH" }, away: { specialValue: "0 : 12.5", outcome: "2 AH" } },
-							"-13.5": { home: { specialValue: "0 : 13.5", outcome: "1 AH" }, away: { specialValue: "0 : 13.5", outcome: "2 AH" } },
-							"-14.5": { home: { specialValue: "0 : 14.5", outcome: "1 AH" }, away: { specialValue: "0 : 14.5", outcome: "2 AH" } },
-							"-15.5": { home: { specialValue: "0 : 15.5", outcome: "1 AH" }, away: { specialValue: "0 : 15.5", outcome: "2 AH" } },
-							"-16.5": { home: { specialValue: "0 : 16.5", outcome: "1 AH" }, away: { specialValue: "0 : 16.5", outcome: "2 AH" } },
-							"-17.5": { home: { specialValue: "0 : 17.5", outcome: "1 AH" }, away: { specialValue: "0 : 17.5", outcome: "2 AH" } },
-							"-18.5": { home: { specialValue: "0 : 18.5", outcome: "1 AH" }, away: { specialValue: "0 : 18.5", outcome: "2 AH" } },
-							"-19.5": { home: { specialValue: "0 : 19.5", outcome: "1 AH" }, away: { specialValue: "0 : 19.5", outcome: "2 AH" } },
-							"-20.5": { home: { specialValue: "0 : 20.5", outcome: "1 AH" }, away: { specialValue: "0 : 20.5", outcome: "2 AH" } },
-							"-21.5": { home: { specialValue: "0 : 21.5", outcome: "1 AH" }, away: { specialValue: "0 : 21.5", outcome: "2 AH" } },
-							"-22.5": { home: { specialValue: "0 : 22.5", outcome: "1 AH" }, away: { specialValue: "0 : 22.5", outcome: "2 AH" } },
-							"-23.5": { home: { specialValue: "0 : 23.5", outcome: "1 AH" }, away: { specialValue: "0 : 23.5", outcome: "2 AH" } },
-							"-24.5": { home: { specialValue: "0 : 24.5", outcome: "1 AH" }, away: { specialValue: "0 : 24.5", outcome: "2 AH" } },
-							"-25.5": { home: { specialValue: "0 : 25.5", outcome: "1 AH" }, away: { specialValue: "0 : 25.5", outcome: "2 AH" } },
-							"-26.5": { home: { specialValue: "0 : 26.5", outcome: "1 AH" }, away: { specialValue: "0 : 26.5", outcome: "2 AH" } },
-							"-27.5": { home: { specialValue: "0 : 27.5", outcome: "1 AH" }, away: { specialValue: "0 : 27.5", outcome: "2 AH" } },
-							"-28.5": { home: { specialValue: "0 : 28.5", outcome: "1 AH" }, away: { specialValue: "0 : 28.5", outcome: "2 AH" } },
-							"-29.5": { home: { specialValue: "0 : 29.5", outcome: "1 AH" }, away: { specialValue: "0 : 29.5", outcome: "2 AH" } },
-							"-30.5": { home: { specialValue: "0 : 30.5", outcome: "1 AH" }, away: { specialValue: "0 : 30.5", outcome: "2 AH" } },
-							"-31.5": { home: { specialValue: "0 : 31.5", outcome: "1 AH" }, away: { specialValue: "0 : 31.5", outcome: "2 AH" } },
-							"-32.5": { home: { specialValue: "0 : 32.5", outcome: "1 AH" }, away: { specialValue: "0 : 32.5", outcome: "2 AH" } },
-							"-33.5": { home: { specialValue: "0 : 33.5", outcome: "1 AH" }, away: { specialValue: "0 : 33.5", outcome: "2 AH" } },
-							"-34.5": { home: { specialValue: "0 : 34.5", outcome: "1 AH" }, away: { specialValue: "0 : 34.5", outcome: "2 AH" } },
-							"-35.5": { home: { specialValue: "0 : 35.5", outcome: "1 AH" }, away: { specialValue: "0 : 35.5", outcome: "2 AH" } },
-							"-36.5": { home: { specialValue: "0 : 36.5", outcome: "1 AH" }, away: { specialValue: "0 : 36.5", outcome: "2 AH" } },
-							"-37.5": { home: { specialValue: "0 : 37.5", outcome: "1 AH" }, away: { specialValue: "0 : 37.5", outcome: "2 AH" } },
-							"-38.5": { home: { specialValue: "0 : 38.5", outcome: "1 AH" }, away: { specialValue: "0 : 38.5", outcome: "2 AH" } },
-							"-39.5": { home: { specialValue: "0 : 39.5", outcome: "1 AH" }, away: { specialValue: "0 : 39.5", outcome: "2 AH" } },
-							"-40.5": { home: { specialValue: "0 : 40.5", outcome: "1 AH" }, away: { specialValue: "0 : 40.5", outcome: "2 AH" } },
-							"-41.5": { home: { specialValue: "0 : 41.5", outcome: "1 AH" }, away: { specialValue: "0 : 41.5", outcome: "2 AH" } },
-							"-42.5": { home: { specialValue: "0 : 42.5", outcome: "1 AH" }, away: { specialValue: "0 : 42.5", outcome: "2 AH" } },
-							"-43.5": { home: { specialValue: "0 : 43.5", outcome: "1 AH" }, away: { specialValue: "0 : 43.5", outcome: "2 AH" } },
-							"-44.5": { home: { specialValue: "0 : 44.5", outcome: "1 AH" }, away: { specialValue: "0 : 44.5", outcome: "2 AH" } },
-							"-45.5": { home: { specialValue: "0 : 45.5", outcome: "1 AH" }, away: { specialValue: "0 : 45.5", outcome: "2 AH" } },
-							"-46.5": { home: { specialValue: "0 : 46.5", outcome: "1 AH" }, away: { specialValue: "0 : 46.5", outcome: "2 AH" } },
-							"-47.5": { home: { specialValue: "0 : 47.5", outcome: "1 AH" }, away: { specialValue: "0 : 47.5", outcome: "2 AH" } },
-							"-48.5": { home: { specialValue: "0 : 48.5", outcome: "1 AH" }, away: { specialValue: "0 : 48.5", outcome: "2 AH" } },
-							"-49.5": { home: { specialValue: "0 : 49.5", outcome: "1 AH" }, away: { specialValue: "0 : 49.5", outcome: "2 AH" } },
-							"-50.0": { home: { specialValue: "0 : 50.0", outcome: "1 AH" }, away: { specialValue: "0 : 50.0", outcome: "2 AH" } },
-
-							// --- Special Case: 0.0 Handicap (Money Line) ---
-							// "0.0": { name: "Draw No Bet", outcome: { home: "1 DNB", away: "2 DNB" } },
-							"0.0": {
-								home: { marketName: "Draw No Bet", outcome: "1 DNB" },
-								away: { marketName: "Draw No Bet", outcome: "2 DNB" }
-							}
+							"-0.5": { home: { provider: { line: "-0.5", outcome: "home" }, bookmaker: { specialValue: "0 : 0.5", outcome: "1 AH" } }, away: { provider: { line: "-0.5", outcome: "away" }, bookmaker: { specialValue: "0 : 0.5", outcome: "2 AH" } } },
+							"-1.0": { home: { provider: { line: "-1.0", outcome: "home" }, bookmaker: { specialValue: "0 : 1.0", outcome: "1 AH" } }, away: { provider: { line: "-1.0", outcome: "away" }, bookmaker: { specialValue: "0 : 1.0", outcome: "2 AH" } } },
+							"-1.5": { home: { provider: { line: "-1.5", outcome: "home" }, bookmaker: { specialValue: "0 : 1.5", outcome: "1 AH" } }, away: { provider: { line: "-1.5", outcome: "away" }, bookmaker: { specialValue: "0 : 1.5", outcome: "2 AH" } } },
+							"-2.0": { home: { provider: { line: "-2.0", outcome: "home" }, bookmaker: { specialValue: "0 : 2.0", outcome: "1 AH" } }, away: { provider: { line: "-2.0", outcome: "away" }, bookmaker: { specialValue: "0 : 2.0", outcome: "2 AH" } } },
+							"-2.5": { home: { provider: { line: "-2.5", outcome: "home" }, bookmaker: { specialValue: "0 : 2.5", outcome: "1 AH" } }, away: { provider: { line: "-2.5", outcome: "away" }, bookmaker: { specialValue: "0 : 2.5", outcome: "2 AH" } } },
+							"-3.0": { home: { provider: { line: "-3.0", outcome: "home" }, bookmaker: { specialValue: "0 : 3.0", outcome: "1 AH" } }, away: { provider: { line: "-3.0", outcome: "away" }, bookmaker: { specialValue: "0 : 3.0", outcome: "2 AH" } } },
+							"-3.5": { home: { provider: { line: "-3.5", outcome: "home" }, bookmaker: { specialValue: "0 : 3.5", outcome: "1 AH" } }, away: { provider: { line: "-3.5", outcome: "away" }, bookmaker: { specialValue: "0 : 3.5", outcome: "2 AH" } } },
+							"-4.0": { home: { provider: { line: "-4.0", outcome: "home" }, bookmaker: { specialValue: "0 : 4.0", outcome: "1 AH" } }, away: { provider: { line: "-4.0", outcome: "away" }, bookmaker: { specialValue: "0 : 4.0", outcome: "2 AH" } } },
+							"-4.5": { home: { provider: { line: "-4.5", outcome: "home" }, bookmaker: { specialValue: "0 : 4.5", outcome: "1 AH" } }, away: { provider: { line: "-4.5", outcome: "away" }, bookmaker: { specialValue: "0 : 4.5", outcome: "2 AH" } } },
+							"-5.0": { home: { provider: { line: "-5.0", outcome: "home" }, bookmaker: { specialValue: "0 : 5.0", outcome: "1 AH" } }, away: { provider: { line: "-5.0", outcome: "away" }, bookmaker: { specialValue: "0 : 5.0", outcome: "2 AH" } } },
+							"-5.5": { home: { provider: { line: "-5.5", outcome: "home" }, bookmaker: { specialValue: "0 : 5.5", outcome: "1 AH" } }, away: { provider: { line: "-5.5", outcome: "away" }, bookmaker: { specialValue: "0 : 5.5", outcome: "2 AH" } } },
+							"-6.0": { home: { provider: { line: "-6.0", outcome: "home" }, bookmaker: { specialValue: "0 : 6.0", outcome: "1 AH" } }, away: { provider: { line: "-6.0", outcome: "away" }, bookmaker: { specialValue: "0 : 6.0", outcome: "2 AH" } } },
+							"-6.5": { home: { provider: { line: "-6.5", outcome: "home" }, bookmaker: { specialValue: "0 : 6.5", outcome: "1 AH" } }, away: { provider: { line: "-6.5", outcome: "away" }, bookmaker: { specialValue: "0 : 6.5", outcome: "2 AH" } } },
+							"-7.0": { home: { provider: { line: "-7.0", outcome: "home" }, bookmaker: { specialValue: "0 : 7.0", outcome: "1 AH" } }, away: { provider: { line: "-7.0", outcome: "away" }, bookmaker: { specialValue: "0 : 7.0", outcome: "2 AH" } } },
+							"-7.5": { home: { provider: { line: "-7.5", outcome: "home" }, bookmaker: { specialValue: "0 : 7.5", outcome: "1 AH" } }, away: { provider: { line: "-7.5", outcome: "away" }, bookmaker: { specialValue: "0 : 7.5", outcome: "2 AH" } } },
+							"-8.0": { home: { provider: { line: "-8.0", outcome: "home" }, bookmaker: { specialValue: "0 : 8.0", outcome: "1 AH" } }, away: { provider: { line: "-8.0", outcome: "away" }, bookmaker: { specialValue: "0 : 8.0", outcome: "2 AH" } } },
+							"-8.5": { home: { provider: { line: "-8.5", outcome: "home" }, bookmaker: { specialValue: "0 : 8.5", outcome: "1 AH" } }, away: { provider: { line: "-8.5", outcome: "away" }, bookmaker: { specialValue: "0 : 8.5", outcome: "2 AH" } } },
+							"-9.0": { home: { provider: { line: "-9.0", outcome: "home" }, bookmaker: { specialValue: "0 : 9.0", outcome: "1 AH" } }, away: { provider: { line: "-9.0", outcome: "away" }, bookmaker: { specialValue: "0 : 9.0", outcome: "2 AH" } } },
+							"-9.5": { home: { provider: { line: "-9.5", outcome: "home" }, bookmaker: { specialValue: "0 : 9.5", outcome: "1 AH" } }, away: { provider: { line: "-9.5", outcome: "away" }, bookmaker: { specialValue: "0 : 9.5", outcome: "2 AH" } } },
+							"-10.0": { home: { provider: { line: "-10.0", outcome: "home" }, bookmaker: { specialValue: "0 : 10.0", outcome: "1 AH" } }, away: { provider: { line: "-10.0", outcome: "away" }, bookmaker: { specialValue: "0 : 10.0", outcome: "2 AH" } } },
+							"-10.5": { home: { provider: { line: "-10.5", outcome: "home" }, bookmaker: { specialValue: "0 : 10.5", outcome: "1 AH" } }, away: { provider: { line: "-10.5", outcome: "away" }, bookmaker: { specialValue: "0 : 10.5", outcome: "2 AH" } } },
+							"-11.0": { home: { provider: { line: "-11.0", outcome: "home" }, bookmaker: { specialValue: "0 : 11.0", outcome: "1 AH" } }, away: { provider: { line: "-11.0", outcome: "away" }, bookmaker: { specialValue: "0 : 11.0", outcome: "2 AH" } } },
+							"-11.5": { home: { provider: { line: "-11.5", outcome: "home" }, bookmaker: { specialValue: "0 : 11.5", outcome: "1 AH" } }, away: { provider: { line: "-11.5", outcome: "away" }, bookmaker: { specialValue: "0 : 11.5", outcome: "2 AH" } } },
+							"-12.0": { home: { provider: { line: "-12.0", outcome: "home" }, bookmaker: { specialValue: "0 : 12.0", outcome: "1 AH" } }, away: { provider: { line: "-12.0", outcome: "away" }, bookmaker: { specialValue: "0 : 12.0", outcome: "2 AH" } } },
+							"-12.5": { home: { provider: { line: "-12.5", outcome: "home" }, bookmaker: { specialValue: "0 : 12.5", outcome: "1 AH" } }, away: { provider: { line: "-12.5", outcome: "away" }, bookmaker: { specialValue: "0 : 12.5", outcome: "2 AH" } } },
+							"-13.0": { home: { provider: { line: "-13.0", outcome: "home" }, bookmaker: { specialValue: "0 : 13.0", outcome: "1 AH" } }, away: { provider: { line: "-13.0", outcome: "away" }, bookmaker: { specialValue: "0 : 13.0", outcome: "2 AH" } } },
+							"-13.5": { home: { provider: { line: "-13.5", outcome: "home" }, bookmaker: { specialValue: "0 : 13.5", outcome: "1 AH" } }, away: { provider: { line: "-13.5", outcome: "away" }, bookmaker: { specialValue: "0 : 13.5", outcome: "2 AH" } } },
+							"-14.0": { home: { provider: { line: "-14.0", outcome: "home" }, bookmaker: { specialValue: "0 : 14.0", outcome: "1 AH" } }, away: { provider: { line: "-14.0", outcome: "away" }, bookmaker: { specialValue: "0 : 14.0", outcome: "2 AH" } } },
+							"-14.5": { home: { provider: { line: "-14.5", outcome: "home" }, bookmaker: { specialValue: "0 : 14.5", outcome: "1 AH" } }, away: { provider: { line: "-14.5", outcome: "away" }, bookmaker: { specialValue: "0 : 14.5", outcome: "2 AH" } } },
+							"-15.0": { home: { provider: { line: "-15.0", outcome: "home" }, bookmaker: { specialValue: "0 : 15.0", outcome: "1 AH" } }, away: { provider: { line: "-15.0", outcome: "away" }, bookmaker: { specialValue: "0 : 15.0", outcome: "2 AH" } } },
+							"-15.5": { home: { provider: { line: "-15.5", outcome: "home" }, bookmaker: { specialValue: "0 : 15.5", outcome: "1 AH" } }, away: { provider: { line: "-15.5", outcome: "away" }, bookmaker: { specialValue: "0 : 15.5", outcome: "2 AH" } } },
+							"-16.0": { home: { provider: { line: "-16.0", outcome: "home" }, bookmaker: { specialValue: "0 : 16.0", outcome: "1 AH" } }, away: { provider: { line: "-16.0", outcome: "away" }, bookmaker: { specialValue: "0 : 16.0", outcome: "2 AH" } } },
+							"-16.5": { home: { provider: { line: "-16.5", outcome: "home" }, bookmaker: { specialValue: "0 : 16.5", outcome: "1 AH" } }, away: { provider: { line: "-16.5", outcome: "away" }, bookmaker: { specialValue: "0 : 16.5", outcome: "2 AH" } } },
+							"-17.0": { home: { provider: { line: "-17.0", outcome: "home" }, bookmaker: { specialValue: "0 : 17.0", outcome: "1 AH" } }, away: { provider: { line: "-17.0", outcome: "away" }, bookmaker: { specialValue: "0 : 17.0", outcome: "2 AH" } } },
+							"-17.5": { home: { provider: { line: "-17.5", outcome: "home" }, bookmaker: { specialValue: "0 : 17.5", outcome: "1 AH" } }, away: { provider: { line: "-17.5", outcome: "away" }, bookmaker: { specialValue: "0 : 17.5", outcome: "2 AH" } } },
+							"-18.0": { home: { provider: { line: "-18.0", outcome: "home" }, bookmaker: { specialValue: "0 : 18.0", outcome: "1 AH" } }, away: { provider: { line: "-18.0", outcome: "away" }, bookmaker: { specialValue: "0 : 18.0", outcome: "2 AH" } } },
+							"-18.5": { home: { provider: { line: "-18.5", outcome: "home" }, bookmaker: { specialValue: "0 : 18.5", outcome: "1 AH" } }, away: { provider: { line: "-18.5", outcome: "away" }, bookmaker: { specialValue: "0 : 18.5", outcome: "2 AH" } } },
+							"-19.0": { home: { provider: { line: "-19.0", outcome: "home" }, bookmaker: { specialValue: "0 : 19.0", outcome: "1 AH" } }, away: { provider: { line: "-19.0", outcome: "away" }, bookmaker: { specialValue: "0 : 19.0", outcome: "2 AH" } } },
+							"-19.5": { home: { provider: { line: "-19.5", outcome: "home" }, bookmaker: { specialValue: "0 : 19.5", outcome: "1 AH" } }, away: { provider: { line: "-19.5", outcome: "away" }, bookmaker: { specialValue: "0 : 19.5", outcome: "2 AH" } } },
+							"-20.0": { home: { provider: { line: "-20.0", outcome: "home" }, bookmaker: { specialValue: "0 : 20.0", outcome: "1 AH" } }, away: { provider: { line: "-20.0", outcome: "away" }, bookmaker: { specialValue: "0 : 20.0", outcome: "2 AH" } } },
+							"-20.5": { home: { provider: { line: "-20.5", outcome: "home" }, bookmaker: { specialValue: "0 : 20.5", outcome: "1 AH" } }, away: { provider: { line: "-20.5", outcome: "away" }, bookmaker: { specialValue: "0 : 20.5", outcome: "2 AH" } } },
+							"-21.0": { home: { provider: { line: "-21.0", outcome: "home" }, bookmaker: { specialValue: "0 : 21.0", outcome: "1 AH" } }, away: { provider: { line: "-21.0", outcome: "away" }, bookmaker: { specialValue: "0 : 21.0", outcome: "2 AH" } } },
+							"-21.5": { home: { provider: { line: "-21.5", outcome: "home" }, bookmaker: { specialValue: "0 : 21.5", outcome: "1 AH" } }, away: { provider: { line: "-21.5", outcome: "away" }, bookmaker: { specialValue: "0 : 21.5", outcome: "2 AH" } } },
+							"-22.0": { home: { provider: { line: "-22.0", outcome: "home" }, bookmaker: { specialValue: "0 : 22.0", outcome: "1 AH" } }, away: { provider: { line: "-22.0", outcome: "away" }, bookmaker: { specialValue: "0 : 22.0", outcome: "2 AH" } } },
+							"-22.5": { home: { provider: { line: "-22.5", outcome: "home" }, bookmaker: { specialValue: "0 : 22.5", outcome: "1 AH" } }, away: { provider: { line: "-22.5", outcome: "away" }, bookmaker: { specialValue: "0 : 22.5", outcome: "2 AH" } } },
+							"-23.0": { home: { provider: { line: "-23.0", outcome: "home" }, bookmaker: { specialValue: "0 : 23.0", outcome: "1 AH" } }, away: { provider: { line: "-23.0", outcome: "away" }, bookmaker: { specialValue: "0 : 23.0", outcome: "2 AH" } } },
+							"-23.5": { home: { provider: { line: "-23.5", outcome: "home" }, bookmaker: { specialValue: "0 : 23.5", outcome: "1 AH" } }, away: { provider: { line: "-23.5", outcome: "away" }, bookmaker: { specialValue: "0 : 23.5", outcome: "2 AH" } } },
+							"-24.0": { home: { provider: { line: "-24.0", outcome: "home" }, bookmaker: { specialValue: "0 : 24.0", outcome: "1 AH" } }, away: { provider: { line: "-24.0", outcome: "away" }, bookmaker: { specialValue: "0 : 24.0", outcome: "2 AH" } } },
+							"-24.5": { home: { provider: { line: "-24.5", outcome: "home" }, bookmaker: { specialValue: "0 : 24.5", outcome: "1 AH" } }, away: { provider: { line: "-24.5", outcome: "away" }, bookmaker: { specialValue: "0 : 24.5", outcome: "2 AH" } } },
+							"-25.0": { home: { provider: { line: "-25.0", outcome: "home" }, bookmaker: { specialValue: "0 : 25.0", outcome: "1 AH" } }, away: { provider: { line: "-25.0", outcome: "away" }, bookmaker: { specialValue: "0 : 25.0", outcome: "2 AH" } } },
+							"-25.5": { home: { provider: { line: "-25.5", outcome: "home" }, bookmaker: { specialValue: "0 : 25.5", outcome: "1 AH" } }, away: { provider: { line: "-25.5", outcome: "away" }, bookmaker: { specialValue: "0 : 25.5", outcome: "2 AH" } } },
+							"-26.0": { home: { provider: { line: "-26.0", outcome: "home" }, bookmaker: { specialValue: "0 : 26.0", outcome: "1 AH" } }, away: { provider: { line: "-26.0", outcome: "away" }, bookmaker: { specialValue: "0 : 26.0", outcome: "2 AH" } } },
+							"-26.5": { home: { provider: { line: "-26.5", outcome: "home" }, bookmaker: { specialValue: "0 : 26.5", outcome: "1 AH" } }, away: { provider: { line: "-26.5", outcome: "away" }, bookmaker: { specialValue: "0 : 26.5", outcome: "2 AH" } } },
+							"-27.0": { home: { provider: { line: "-27.0", outcome: "home" }, bookmaker: { specialValue: "0 : 27.0", outcome: "1 AH" } }, away: { provider: { line: "-27.0", outcome: "away" }, bookmaker: { specialValue: "0 : 27.0", outcome: "2 AH" } } },
+							"-27.5": { home: { provider: { line: "-27.5", outcome: "home" }, bookmaker: { specialValue: "0 : 27.5", outcome: "1 AH" } }, away: { provider: { line: "-27.5", outcome: "away" }, bookmaker: { specialValue: "0 : 27.5", outcome: "2 AH" } } },
+							"-28.0": { home: { provider: { line: "-28.0", outcome: "home" }, bookmaker: { specialValue: "0 : 28.0", outcome: "1 AH" } }, away: { provider: { line: "-28.0", outcome: "away" }, bookmaker: { specialValue: "0 : 28.0", outcome: "2 AH" } } },
+							"-28.5": { home: { provider: { line: "-28.5", outcome: "home" }, bookmaker: { specialValue: "0 : 28.5", outcome: "1 AH" } }, away: { provider: { line: "-28.5", outcome: "away" }, bookmaker: { specialValue: "0 : 28.5", outcome: "2 AH" } } },
+							"-29.0": { home: { provider: { line: "-29.0", outcome: "home" }, bookmaker: { specialValue: "0 : 29.0", outcome: "1 AH" } }, away: { provider: { line: "-29.0", outcome: "away" }, bookmaker: { specialValue: "0 : 29.0", outcome: "2 AH" } } },
+							"-29.5": { home: { provider: { line: "-29.5", outcome: "home" }, bookmaker: { specialValue: "0 : 29.5", outcome: "1 AH" } }, away: { provider: { line: "-29.5", outcome: "away" }, bookmaker: { specialValue: "0 : 29.5", outcome: "2 AH" } } },
+							"-30.0": { home: { provider: { line: "-30.0", outcome: "home" }, bookmaker: { specialValue: "0 : 30.0", outcome: "1 AH" } }, away: { provider: { line: "-30.0", outcome: "away" }, bookmaker: { specialValue: "0 : 30.0", outcome: "2 AH" } } },
+							"-30.5": { home: { provider: { line: "-30.5", outcome: "home" }, bookmaker: { specialValue: "0 : 30.5", outcome: "1 AH" } }, away: { provider: { line: "-30.5", outcome: "away" }, bookmaker: { specialValue: "0 : 30.5", outcome: "2 AH" } } },
+							"-31.0": { home: { provider: { line: "-31.0", outcome: "home" }, bookmaker: { specialValue: "0 : 31.0", outcome: "1 AH" } }, away: { provider: { line: "-31.0", outcome: "away" }, bookmaker: { specialValue: "0 : 31.0", outcome: "2 AH" } } },
+							"-31.5": { home: { provider: { line: "-31.5", outcome: "home" }, bookmaker: { specialValue: "0 : 31.5", outcome: "1 AH" } }, away: { provider: { line: "-31.5", outcome: "away" }, bookmaker: { specialValue: "0 : 31.5", outcome: "2 AH" } } },
+							"-32.0": { home: { provider: { line: "-32.0", outcome: "home" }, bookmaker: { specialValue: "0 : 32.0", outcome: "1 AH" } }, away: { provider: { line: "-32.0", outcome: "away" }, bookmaker: { specialValue: "0 : 32.0", outcome: "2 AH" } } },
+							"-32.5": { home: { provider: { line: "-32.5", outcome: "home" }, bookmaker: { specialValue: "0 : 32.5", outcome: "1 AH" } }, away: { provider: { line: "-32.5", outcome: "away" }, bookmaker: { specialValue: "0 : 32.5", outcome: "2 AH" } } },
+							"-33.0": { home: { provider: { line: "-33.0", outcome: "home" }, bookmaker: { specialValue: "0 : 33.0", outcome: "1 AH" } }, away: { provider: { line: "-33.0", outcome: "away" }, bookmaker: { specialValue: "0 : 33.0", outcome: "2 AH" } } },
+							"-33.5": { home: { provider: { line: "-33.5", outcome: "home" }, bookmaker: { specialValue: "0 : 33.5", outcome: "1 AH" } }, away: { provider: { line: "-33.5", outcome: "away" }, bookmaker: { specialValue: "0 : 33.5", outcome: "2 AH" } } },
+							"-34.0": { home: { provider: { line: "-34.0", outcome: "home" }, bookmaker: { specialValue: "0 : 34.0", outcome: "1 AH" } }, away: { provider: { line: "-34.0", outcome: "away" }, bookmaker: { specialValue: "0 : 34.0", outcome: "2 AH" } } },
+							"-34.5": { home: { provider: { line: "-34.5", outcome: "home" }, bookmaker: { specialValue: "0 : 34.5", outcome: "1 AH" } }, away: { provider: { line: "-34.5", outcome: "away" }, bookmaker: { specialValue: "0 : 34.5", outcome: "2 AH" } } },
+							"-35.0": { home: { provider: { line: "-35.0", outcome: "home" }, bookmaker: { specialValue: "0 : 35.0", outcome: "1 AH" } }, away: { provider: { line: "-35.0", outcome: "away" }, bookmaker: { specialValue: "0 : 35.0", outcome: "2 AH" } } },
+							"-35.5": { home: { provider: { line: "-35.5", outcome: "home" }, bookmaker: { specialValue: "0 : 35.5", outcome: "1 AH" } }, away: { provider: { line: "-35.5", outcome: "away" }, bookmaker: { specialValue: "0 : 35.5", outcome: "2 AH" } } },
+							"-36.0": { home: { provider: { line: "-36.0", outcome: "home" }, bookmaker: { specialValue: "0 : 36.0", outcome: "1 AH" } }, away: { provider: { line: "-36.0", outcome: "away" }, bookmaker: { specialValue: "0 : 36.0", outcome: "2 AH" } } },
+							"-36.5": { home: { provider: { line: "-36.5", outcome: "home" }, bookmaker: { specialValue: "0 : 36.5", outcome: "1 AH" } }, away: { provider: { line: "-36.5", outcome: "away" }, bookmaker: { specialValue: "0 : 36.5", outcome: "2 AH" } } },
+							"-37.0": { home: { provider: { line: "-37.0", outcome: "home" }, bookmaker: { specialValue: "0 : 37.0", outcome: "1 AH" } }, away: { provider: { line: "-37.0", outcome: "away" }, bookmaker: { specialValue: "0 : 37.0", outcome: "2 AH" } } },
+							"-37.5": { home: { provider: { line: "-37.5", outcome: "home" }, bookmaker: { specialValue: "0 : 37.5", outcome: "1 AH" } }, away: { provider: { line: "-37.5", outcome: "away" }, bookmaker: { specialValue: "0 : 37.5", outcome: "2 AH" } } },
+							"-38.0": { home: { provider: { line: "-38.0", outcome: "home" }, bookmaker: { specialValue: "0 : 38.0", outcome: "1 AH" } }, away: { provider: { line: "-38.0", outcome: "away" }, bookmaker: { specialValue: "0 : 38.0", outcome: "2 AH" } } },
+							"-38.5": { home: { provider: { line: "-38.5", outcome: "home" }, bookmaker: { specialValue: "0 : 38.5", outcome: "1 AH" } }, away: { provider: { line: "-38.5", outcome: "away" }, bookmaker: { specialValue: "0 : 38.5", outcome: "2 AH" } } },
+							"-39.0": { home: { provider: { line: "-39.0", outcome: "home" }, bookmaker: { specialValue: "0 : 39.0", outcome: "1 AH" } }, away: { provider: { line: "-39.0", outcome: "away" }, bookmaker: { specialValue: "0 : 39.0", outcome: "2 AH" } } },
+							"-39.5": { home: { provider: { line: "-39.5", outcome: "home" }, bookmaker: { specialValue: "0 : 39.5", outcome: "1 AH" } }, away: { provider: { line: "-39.5", outcome: "away" }, bookmaker: { specialValue: "0 : 39.5", outcome: "2 AH" } } },
+							"-40.0": { home: { provider: { line: "-40.0", outcome: "home" }, bookmaker: { specialValue: "0 : 40.0", outcome: "1 AH" } }, away: { provider: { line: "-40.0", outcome: "away" }, bookmaker: { specialValue: "0 : 40.0", outcome: "2 AH" } } },
+							"-40.5": { home: { provider: { line: "-40.5", outcome: "home" }, bookmaker: { specialValue: "0 : 40.5", outcome: "1 AH" } }, away: { provider: { line: "-40.5", outcome: "away" }, bookmaker: { specialValue: "0 : 40.5", outcome: "2 AH" } } },
+							"-41.0": { home: { provider: { line: "-41.0", outcome: "home" }, bookmaker: { specialValue: "0 : 41.0", outcome: "1 AH" } }, away: { provider: { line: "-41.0", outcome: "away" }, bookmaker: { specialValue: "0 : 41.0", outcome: "2 AH" } } },
+							"-41.5": { home: { provider: { line: "-41.5", outcome: "home" }, bookmaker: { specialValue: "0 : 41.5", outcome: "1 AH" } }, away: { provider: { line: "-41.5", outcome: "away" }, bookmaker: { specialValue: "0 : 41.5", outcome: "2 AH" } } },
+							"-42.0": { home: { provider: { line: "-42.0", outcome: "home" }, bookmaker: { specialValue: "0 : 42.0", outcome: "1 AH" } }, away: { provider: { line: "-42.0", outcome: "away" }, bookmaker: { specialValue: "0 : 42.0", outcome: "2 AH" } } },
+							"-42.5": { home: { provider: { line: "-42.5", outcome: "home" }, bookmaker: { specialValue: "0 : 42.5", outcome: "1 AH" } }, away: { provider: { line: "-42.5", outcome: "away" }, bookmaker: { specialValue: "0 : 42.5", outcome: "2 AH" } } },
+							"-43.0": { home: { provider: { line: "-43.0", outcome: "home" }, bookmaker: { specialValue: "0 : 43.0", outcome: "1 AH" } }, away: { provider: { line: "-43.0", outcome: "away" }, bookmaker: { specialValue: "0 : 43.0", outcome: "2 AH" } } },
+							"-43.5": { home: { provider: { line: "-43.5", outcome: "home" }, bookmaker: { specialValue: "0 : 43.5", outcome: "1 AH" } }, away: { provider: { line: "-43.5", outcome: "away" }, bookmaker: { specialValue: "0 : 43.5", outcome: "2 AH" } } },
+							"-44.0": { home: { provider: { line: "-44.0", outcome: "home" }, bookmaker: { specialValue: "0 : 44.0", outcome: "1 AH" } }, away: { provider: { line: "-44.0", outcome: "away" }, bookmaker: { specialValue: "0 : 44.0", outcome: "2 AH" } } },
+							"-44.5": { home: { provider: { line: "-44.5", outcome: "home" }, bookmaker: { specialValue: "0 : 44.5", outcome: "1 AH" } }, away: { provider: { line: "-44.5", outcome: "away" }, bookmaker: { specialValue: "0 : 44.5", outcome: "2 AH" } } },
+							"-45.0": { home: { provider: { line: "-45.0", outcome: "home" }, bookmaker: { specialValue: "0 : 45.0", outcome: "1 AH" } }, away: { provider: { line: "-45.0", outcome: "away" }, bookmaker: { specialValue: "0 : 45.0", outcome: "2 AH" } } },
+							"-45.5": { home: { provider: { line: "-45.5", outcome: "home" }, bookmaker: { specialValue: "0 : 45.5", outcome: "1 AH" } }, away: { provider: { line: "-45.5", outcome: "away" }, bookmaker: { specialValue: "0 : 45.5", outcome: "2 AH" } } },
+							"-46.0": { home: { provider: { line: "-46.0", outcome: "home" }, bookmaker: { specialValue: "0 : 46.0", outcome: "1 AH" } }, away: { provider: { line: "-46.0", outcome: "away" }, bookmaker: { specialValue: "0 : 46.0", outcome: "2 AH" } } },
+							"-46.5": { home: { provider: { line: "-46.5", outcome: "home" }, bookmaker: { specialValue: "0 : 46.5", outcome: "1 AH" } }, away: { provider: { line: "-46.5", outcome: "away" }, bookmaker: { specialValue: "0 : 46.5", outcome: "2 AH" } } },
+							"-47.0": { home: { provider: { line: "-47.0", outcome: "home" }, bookmaker: { specialValue: "0 : 47.0", outcome: "1 AH" } }, away: { provider: { line: "-47.0", outcome: "away" }, bookmaker: { specialValue: "0 : 47.0", outcome: "2 AH" } } },
+							"-47.5": { home: { provider: { line: "-47.5", outcome: "home" }, bookmaker: { specialValue: "0 : 47.5", outcome: "1 AH" } }, away: { provider: { line: "-47.5", outcome: "away" }, bookmaker: { specialValue: "0 : 47.5", outcome: "2 AH" } } },
+							"-48.0": { home: { provider: { line: "-48.0", outcome: "home" }, bookmaker: { specialValue: "0 : 48.0", outcome: "1 AH" } }, away: { provider: { line: "-48.0", outcome: "away" }, bookmaker: { specialValue: "0 : 48.0", outcome: "2 AH" } } },
+							"-48.5": { home: { provider: { line: "-48.5", outcome: "home" }, bookmaker: { specialValue: "0 : 48.5", outcome: "1 AH" } }, away: { provider: { line: "-48.5", outcome: "away" }, bookmaker: { specialValue: "0 : 48.5", outcome: "2 AH" } } },
+							"-49.0": { home: { provider: { line: "-49.0", outcome: "home" }, bookmaker: { specialValue: "0 : 49.0", outcome: "1 AH" } }, away: { provider: { line: "-49.0", outcome: "away" }, bookmaker: { specialValue: "0 : 49.0", outcome: "2 AH" } } },
+							"-49.5": { home: { provider: { line: "-49.5", outcome: "home" }, bookmaker: { specialValue: "0 : 49.5", outcome: "1 AH" } }, away: { provider: { line: "-49.5", outcome: "away" }, bookmaker: { specialValue: "0 : 49.5", outcome: "2 AH" } } },
+							"-50.0": { home: { provider: { line: "-50.0", outcome: "home" }, bookmaker: { specialValue: "0 : 50.0", outcome: "1 AH" } }, away: { provider: { line: "-50.0", outcome: "away" }, bookmaker: { specialValue: "0 : 50.0", outcome: "2 AH" } } },
 						}
 					}
 				}

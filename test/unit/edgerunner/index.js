@@ -18,6 +18,7 @@ const providerFootballMarket = {
 		"-3.5": { "hdp": -3.5, "home": 4.50, "away": 1.15 },
 		"-2.5": { "hdp": -2.5, "home": 3.20, "away": 1.30 },
 		"-1.5": { "hdp": -1.5, "home": 2.30, "away": 1.55 },
+		"-0.5": { "hdp": -0.5, "home": 1.48, "away": 2.50 },
 		"0.0": { "hdp": 0.0, "home": 1.62, "away": 2.15 },
 		"0.5": { "hdp": 0.5, "home": 1.48, "away": 2.50 },
 		"1.5": { "hdp": 1.5, "home": 1.26, "away": 3.50 },
@@ -1670,7 +1671,7 @@ const providerBasketballMarket = {
 			"away": 1.793,
 			"max": 200
 		},
-		"-5.0": {
+		"-5.5": {
 			"hdp": -5,
 			"alt_line_id": 50447121405,
 			"home": 1.781,
@@ -1700,6 +1701,13 @@ const providerBasketballMarket = {
 		},
 		"-3.0": {
 			"hdp": -3,
+			"alt_line_id": 50447121409,
+			"home": 1.558,
+			"away": 2.28,
+			"max": 200
+		},
+		"0.0": {
+			"hdp": 0,
 			"alt_line_id": 50447121409,
 			"home": 1.558,
 			"away": 2.28,
@@ -2267,7 +2275,7 @@ const bookmakerBasketballMarket = [
 		],
 		"name": "Handicap (Incl. Overtime) -7.5",
 		"typeId": 9322,
-		"specialValue": "0 : 5.5",
+		"specialValue": "0 : 7.5",
 		"oddsDescription": "Predict the outcome of a match after the handicap has been applied to the match result. The handicap value is shown in brackets. Asian handicaps eliminate the chance of a draw, with two possible outcomes - Home team win (1H) or Away team win (2H).",
 		"isOutright": false,
 		"isGoalScorer": false,
@@ -2389,7 +2397,7 @@ test("Bot Service Tests", async (t) => {
 		console.log("===========================================");
 	});
 
-	await t.test("Evaluate function for basketball", { skip: true }, async (t) => {
+	await t.test("Evaluate function for basketball", async (t) => {
 		const result = edgerunner.bridgeMarket(bookmakerBasketballMarket, providerBasketballMarket);
 		console.log("================ BASKETBALL ===============");
 		// console.log(JSON.stringify(result, null, 2));

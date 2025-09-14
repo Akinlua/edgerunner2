@@ -358,6 +358,11 @@ class EdgeRunner {
 				return allSelections;
 			});
 
+			// +++ ADD THIS LOG HERE +++
+			console.log(chalk.magenta.bold('--- FLATTENED BOOKMAKER SELECTIONS FOR MATCHING ---'));
+			// console.log(JSON.stringify(bookmakerSelections, null, 2));
+			// ++++++++++++++++++++++++++++
+
 			const groupedMatches = {};
 
 			for (const [line, submarkets] of Object.entries(normalizedProviderMarkets)) {
@@ -390,10 +395,8 @@ class EdgeRunner {
 							const bookmakerRule = sideRule.bookmaker;
 							const gameFound = bookmakerSelections.find(sel => {
 								const s = sel.searchable;
-								if (bookmakerRule.marketName) {
-									return s.name.replace(/\s/g, '') === bookmakerRule.marketName.replace(/\s/g, '') && s.outcome === bookmakerRule.outcome;
-								}
-								return s.specialValue.replace(/\s/g, '') === bookmakerRule.specialValue.replace(/\s/g, '') && s.outcome === bookmakerRule.outcome;
+								return s.specialValue.replace(/\s/g, '') === bookmakerRule.specialValue.replace(/\s/g, '') &&
+									s.outcome === bookmakerRule.outcome;
 							});
 
 							if (gameFound) {
@@ -546,6 +549,11 @@ class EdgeRunner {
 				console.log(`[Edgerunner] Main market data not found in detailed provider info.`);
 				return;
 			}
+
+			console.log(chalk.yellow.bold('--- RAW BOOKMAKER DATA ---'));
+			// console.log(JSON.stringify(detailedBookmakerData, null, 2));
+			console.log(chalk.yellow.bold('--- RAW PROVIDER DATA ---'));
+			console.log(JSON.stringify(detailedProviderPayload.data.periods.num_0, null, 2));
 
 			const providerMarkets = {
 				money_line: detailedProviderPayload.data.periods.num_0.money_line,
