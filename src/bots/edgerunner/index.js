@@ -263,27 +263,60 @@ class EdgeRunner {
 	}
 
 	calculateValue(matchedBet) {
-		const { bookmaker, provider } = matchedBet;
-		const data = provider.fullLineData;
-		const nonOddKeys = new Set(['lineType', 'points', 'hdp', 'alt_line_id', 'max']);
-		const { outcomeKeys, oddsArray } = Object.entries(data).reduce((acc, [key, value]) => {
-			if (!nonOddKeys.has(key) && typeof value === 'number') {
-				acc.outcomeKeys.push(key);
-				acc.oddsArray.push(value);
+		try {
+			const { bookmaker, provider } = matchedBet;
+
+			let oddsSource = [];
+			let selectionNameForLookup = provider.matchedOutcome.name;
+
+			const isFootballHandicap = provider.sportId === '1'
+				&& provider.lineType === 'spreads'
+				&& bookmaker.market.selections?.length >= 3;
+
+			if (isFootballHandicap) {
+				// For football handicaps, use the 3 odds from the bookmaker for the most accurate calculation.
+				oddsSource = bookmaker.market.selections.map(sel => ({
+					name: sel.name, // "Home", "Draw", "Away"
+					value: sel.odd.value
+				}));
+				selectionNameForLookup = bookmaker.selection.name;
+			} else {
+				// For all other markets (basketball, totals, etc.), use the 2 odds from the provider.
+				const nonOddKeys = new Set(['lineType', 'points', 'hdp', 'alt_line_id', 'max']);
+				oddsSource = Object.entries(provider.fullLineData)
+					.filter(([key, value]) => !nonOddKeys.has(key) && typeof value === 'number')
+					.map(([key, value]) => ({ name: key, value: value }));
 			}
-			return acc;
-		}, { outcomeKeys: [], oddsArray: [] });
-		if (oddsArray.length < 2) return { ...matchedBet, value: -Infinity };
-		const noVigOddsArray = this.provider.devigOdds(oddsArray);
 
-		if (!noVigOddsArray) return { ...matchedBet, value: -Infinity };
-		const noVigOdds = Object.fromEntries(outcomeKeys.map((key, i) => [key, noVigOddsArray[i]]));
-		const trueOdd = noVigOdds[provider.matchedOutcome.name];
 
-		if (!trueOdd) return { ...matchedBet, value: -Infinity };
-		const value = (bookmaker.selection.odd.value / trueOdd - 1) * 100;
+			if (oddsSource.length < 2) {
+				return { ...matchedBet, value: -Infinity, trueOdd: null };
+			}
 
-		return { ...matchedBet, value, trueOdd };
+			const oddsArray = oddsSource.map(o => o.value);
+			const noVigOddsArray = this.provider.devigOdds(oddsArray);
+
+			if (!noVigOddsArray) {
+				return { ...matchedBet, value: -Infinity, trueOdd: null };
+			}
+
+			const trueOddsMap = new Map(
+				oddsSource.map((o, i) => [o.name, noVigOddsArray[i]])
+			);
+
+			const trueOdd = trueOddsMap.get(selectionNameForLookup);
+
+			if (!trueOdd) {
+				return { ...matchedBet, value: -Infinity, trueOdd: null };
+			}
+			const value = (bookmaker.selection.odd.value / trueOdd - 1) * 100;
+
+			return { ...matchedBet, value, trueOdd };
+
+		} catch (error) {
+			console.error(chalk.red('[EdgeRunner] Error during value calculation:'), error);
+			return { ...matchedBet, value: -Infinity, trueOdd: null };
+		}
 	};
 
 	async evaluateMarket(bookmakerMarkets, providerMarkets) {
