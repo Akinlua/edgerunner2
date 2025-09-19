@@ -47,19 +47,25 @@ export default
 			const password = interaction.options.getString("password");
 			const userId = interaction.options.getString("userid");
 			const fixedStake = interaction.options.getNumber("fixedstake");
-
 			const useProxy = interaction.options.getBoolean("use-proxy") ?? false;
-			const proxyIp = interaction.options.getString("proxy-ip");
-			const proxyUser = interaction.options.getString("proxy-user");
-			const proxyPass = interaction.options.getString("proxy-pass");
+
 
 			const payload = {
 				provider: { userId },
 				bookmaker: { username, password },
-				edgerunner: fixedStake ? { fixedStakeValue: fixedStake } : {}
+			    edgerunner: {
+        			fixedStake: {
+            			enabled: true,
+            			value: fixedStake
+        			}
+    			}
 			};
 
 			if (useProxy) {
+				const proxyIp = interaction.options.getString("proxy-ip");
+				const proxyUser = interaction.options.getString("proxy-user");
+				const proxyPass = interaction.options.getString("proxy-pass");
+
 				if (!proxyIp || !proxyUser || !proxyPass) {
 					return await interaction.editReply("❌ **Proxy Error:** If 'use-proxy' is true, you must provide a proxy username and password.");
 				}
