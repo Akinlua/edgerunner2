@@ -22,7 +22,7 @@ const baseConfig = {
 		fixedStake: { enabled: true, value: 10 },
 		minValueBetPercentage: 5.5,
 		minValueBetOdds: 1.45,
-		maxValueBetOdds: 3.5,
+		maxValueBetOdds: 4.00,
 		delay: 10 // 30 to slow
 	},
 	proxy: {
