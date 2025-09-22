@@ -605,6 +605,7 @@ class EdgeRunner {
 
 		this.provider.on('fatal', (errorMessage) => {
 			this.#sendLog(`🛑 **Provider Error:** ${errorMessage}`);
+			console.log(`🛑 **Provider Error:** ${errorMessage}`);
 			this.stop();
 		});
 

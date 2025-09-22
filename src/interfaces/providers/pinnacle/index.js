@@ -16,7 +16,7 @@ class Provider extends EventEmitter {
     this.retryCount = 0;
     this.maxRetries = 5;
     this.state = {
-      status: "IDLE",
+      status: this.constructor.Status.IDLE,
       message: "Provider has not started polling.",
       cursor: null,
       lastChecked: null,
@@ -24,19 +24,28 @@ class Provider extends EventEmitter {
     };
   }
 
+  static Status = Object.freeze({
+    IDLE: "IDLE",
+    POLLING: "POLLING",
+    RETRYING: "RETRYING",
+    ERROR: "ERROR",
+    FATAL_ERROR: "FATAL_ERROR",
+    STOPPED: "STOPPED",
+  });
+
   startPolling() {
-    if (this.state.status === "POLLING") {
+    if (this.state.status === this.constructor.Status.POLLING) {
       console.log("[Provider] Polling is already running.");
       return;
     }
     if (!this.config.userId) {
       const errorMessage = "User Id not set. Polling cannot start.";
-      this.state.status = "ERROR";
+      this.state.status = this.constructor.Status.ERROR;
       this.state.message = errorMessage;
       throw new Error(errorMessage);
     }
 
-    this.state.status = "POLLING";
+    this.state.status = this.constructor.Status.POLLING;
     this.state.message = "Actively polling for new alerts.";
     console.log(
       chalk.green(
@@ -48,7 +57,11 @@ class Provider extends EventEmitter {
   }
 
   async poll() {
-    while (this.state.status === "POLLING") {
+    const allowed_status = [
+      this.constructor.Status.POLLING,
+      this.constructor.Status.RETRYING,
+    ];
+    while (allowed_status.includes(this.state.status)) {
       try {
         const url = new URL(this.config.alertApiUrl);
         if (this.state.cursor) {
@@ -59,7 +72,7 @@ class Provider extends EventEmitter {
 
         if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
-            this.state.status = "FATAL_ERROR";
+            this.state.status = this.constructor.Status.FATAL_ERROR;
             this.state.message = "Invalid userId. Polling stopped.";
             this.emit("fatal", this.state.message);
             this.stopPolling();
@@ -98,13 +111,14 @@ class Provider extends EventEmitter {
           this.state.message = "No new notifications found.";
         }
         this.retryCount = 0;
+        this.state.status = this.constructor.Status.POLLING;
       } catch (error) {
-        this.state.status = "ERROR";
+        this.state.status = this.constructor.Status.RETRYING;
         this.state.message = `Polling error: ${error.message}`;
         console.error("[Provider] Polling error:", error);
 
         if (this.retryCount >= this.maxRetries) {
-          this.state.status = "FATAL_ERROR";
+          this.state.status = this.constructor.Status.FATAL_ERROR;
           this.state.message = `Max retries (${this.maxRetries}) reached. Stopping polling.`;
           this.emit("fatal", this.state.message);
           this.stopPolling();
@@ -227,7 +241,7 @@ class Provider extends EventEmitter {
   }
 
   stopPolling() {
-    this.state.status = "STOPPED";
+    this.state.status = this.constructor.Status.STOPPED;
     this.state.message = "Polling has been stopped by user.";
     console.log(chalk.yellow("[Provider] Polling stopped."));
   }
