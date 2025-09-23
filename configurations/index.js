@@ -7,7 +7,7 @@ import production from "./production.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const envPath = path.resolve(__dirname, `../.env.${process.env.NODE_ENV}`);
+const envPath = path.resolve(__dirname, `../env/.env.${process.env.NODE_ENV}`);
 
 dotenv.config({ path: envPath });
 

@@ -1,0 +1,9 @@
+node_modules
+
+# Ignore logs and local data files
+data/
+npm-debug.log
+
+# Ignore system files
+.DS_Store
+.env
