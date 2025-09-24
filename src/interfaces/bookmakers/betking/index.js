@@ -2711,27 +2711,36 @@ class BetKingBookmaker {
         timeout: 30000,
       });
 
-      const propsString = await page.$eval(
+      // 1. Get props from the FreeToPlay component for accessToken
+      const freeToPlayPropsString = await page.$eval(
+        'astro-island[component-export="FreeToPlay"]',
+        (island) => island.getAttribute("props"),
+      );
+      if (!freeToPlayPropsString) {
+        throw new Error("Could not find Acces Token In FreeToPlay props.");
+      }
+      const freeToPlayProps = JSON.parse(freeToPlayPropsString);
+      const accessToken = freeToPlayProps.accessToken?.[1];
+
+      // 2. Get props from the Header component for other account details
+      const headerPropsString = await page.$eval(
         'astro-island[component-export="Header"]',
         (island) => island.getAttribute("props"),
       );
-      if (!propsString) throw new Error("Could not find Header props.");
-      const props = JSON.parse(propsString, (key, value) =>
-        Array.isArray(value) && value.length === 2 ? value[1] : value,
-      );
+      if (!headerPropsString) {
+        throw new Error("Could not find Header props.");
+      }
+      const headerProps = JSON.parse(headerPropsString);
 
-      const contextContent = await page.evaluate(() => {
-        const script = Array.from(document.querySelectorAll("script")).find(
-          (s) => s.textContent.includes("__remixContext"),
-        );
-        return script ? script.textContent : null;
-      });
-      if (!contextContent) throw new Error("Could not find the Remix context.");
-      const jsonString = contextContent.substring(
-        contextContent.indexOf("{"),
-        contextContent.lastIndexOf("}") + 1,
-      );
-      const remixContext = JSON.parse(jsonString);
+      // Astro serializes some props as [0, value] or [1, value].
+      const extractValue = (prop) => (Array.isArray(prop) ? prop[1] : prop);
+
+      const balance = extractValue(headerProps.balance);
+      const openBetsCount = extractValue(headerProps.betsCount);
+      const isAuth = extractValue(headerProps.auth);
+      const freeBets = extractValue(headerProps.freeBets);
+      const unreadMessageCount = extractValue(headerProps.unreadMessageCount);
+
       console.log(
         `[Bookmaker] Successfully extracted account info for ${username}`,
       );
@@ -2740,16 +2749,14 @@ class BetKingBookmaker {
         status: this.constructor.Status.AUTHENTICATED,
         message: `Successfully extracted account info for ${username}`,
       };
+
       return {
-        balance: parseFloat(props.balance),
-        openBetsCount: parseInt(
-          remixContext?.state?.loaderData?.root?.betsCount,
-          10,
-        ),
-        accessToken: props.accessToken,
-        freeBets: props.freeBets,
-        unreadMessageCount: props.unreadMessageCount,
-        isAuth: props.auth,
+        balance: parseFloat(balance),
+        openBetsCount: parseInt(openBetsCount, 10),
+        accessToken: accessToken,
+        freeBets: freeBets,
+        unreadMessageCount: unreadMessageCount,
+        isAuth: isAuth,
       };
     } catch (error) {
       console.error("Error in #getAccountState:", error.message);
@@ -2819,6 +2826,7 @@ class BetKingBookmaker {
       // on succesful signin get and store the account info
       this.accountInfo = await this.#getBookmakerAccountState(username);
       if (!this.accountInfo.accessToken) {
+        console.log(this.accountInfo);
         throw new Error("Access token could not be found after login.");
       }
 
