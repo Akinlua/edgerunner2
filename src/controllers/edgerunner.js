@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import configurations from "../../configurations/index.js";
-import { createEdgeRunnerConfig } from "../bots/edgerunner/helper.js";
+import { createEdgeRunnerConfig } from "../bots/edgerunner/defaults.js";
 import { client } from "../server.js";
 import { ChannelType } from "discord.js";
 import pkg from "lodash";

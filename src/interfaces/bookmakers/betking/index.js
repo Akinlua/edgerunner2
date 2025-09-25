@@ -1,15 +1,13 @@
 import Fuse from "fuse.js";
 import { URLSearchParams } from "url";
 import chalk from "chalk";
-import fs from "fs/promises";
-import path from "path";
 import { AuthenticationError } from "../../../core/errors.js";
 
 class BetKingBookmaker {
-  constructor(config, browser) {
+  constructor(config, browser, edgeRunnerStore) {
     this.config = config;
     this.browser = browser;
-    this.session = null;
+    this.botStore = edgeRunnerStore;
     this.state = {
       status: this.constructor.Status.INITIALIZING,
       message: "Bot has just started",
@@ -2258,22 +2256,6 @@ class BetKingBookmaker {
     ERROR: "ERROR",
   });
 
-  #loadCookies = async (username) => {
-    const cookiePath = path.resolve(`data/cookies/${username}-cookies.json`);
-    try {
-      const cookieData = await fs.readFile(cookiePath, "utf8");
-      return JSON.parse(cookieData);
-    } catch (error) {
-      return [];
-    }
-  };
-
-  #saveCookies = async (username, cookies) => {
-    const cookiePath = path.resolve(`./data/cookies/${username}-cookies.json`);
-    await fs.mkdir(path.dirname(cookiePath), { recursive: true });
-    await fs.writeFile(cookiePath, JSON.stringify(cookies, null, 2));
-  };
-
   #areCookiesValid = async (cookies) => {
     const accessToken = cookies.find((c) => c.name === "accessToken");
     if (!accessToken) {
@@ -2668,6 +2650,22 @@ class BetKingBookmaker {
     }
   }
 
+  /**
+   * Executes the heavy, page-scraping operation to fetch the complete user account state.
+   *
+   * This method is the core logic for retrieving all session-dependent data, including
+   * the essential  current `balance`, and `freeBets`. It relies on
+   * saved cookies for authentication and performs a Puppeteer-based scrape.
+   *
+   * @private
+   * @async
+   * @param {string} username - The username used to retrieve the stored cookies.
+   * @returns {Promise<Object>} An object containing the fully extracted session data:
+   * `{ balance, openBetsCount, freeBets, ... }`.
+   * @throws {AuthenticationError} Thrown if saved cookies are missing, invalid, or expired.
+   * @throws {Error} Thrown if critical page elements (Astro components) are not found,
+   * or if a network/timeout error occurs during navigation/scraping.
+   */
   async #getBookmakerAccountState(username) {
     this.state = {
       status: this.constructor.Status.WORKING,
@@ -2688,7 +2686,7 @@ class BetKingBookmaker {
       });
       await page.setJavaScriptEnabled(false);
 
-      const cookies = await this.#loadCookies(username);
+      const cookies = this.botStore.getBookmakerCookies();
       if (!cookies || cookies.length === 0) {
         throw new AuthenticationError("No saved cookies found.");
       }
@@ -2702,18 +2700,7 @@ class BetKingBookmaker {
         timeout: 30000,
       });
 
-      // 1. Get props from the FreeToPlay component for accessToken
-      const freeToPlayPropsString = await page.$eval(
-        'astro-island[component-export="FreeToPlay"]',
-        (island) => island.getAttribute("props"),
-      );
-      if (!freeToPlayPropsString) {
-        throw new Error("Could not find Acces Token In FreeToPlay props.");
-      }
-      const freeToPlayProps = JSON.parse(freeToPlayPropsString);
-      const accessToken = freeToPlayProps.accessToken?.[1];
-
-      // 2. Get props from the Header component for other account details
+      // Get props from the Header component for other account details
       const headerPropsString = await page.$eval(
         'astro-island[component-export="Header"]',
         (island) => island.getAttribute("props"),
@@ -2726,8 +2713,27 @@ class BetKingBookmaker {
       // Astro serializes some props as [0, value] or [1, value].
       const extractValue = (prop) => (Array.isArray(prop) ? prop[1] : prop);
 
+      // Get bets count from remix contnent
+      const contextContent = await page.evaluate(() => {
+        const scripts = Array.from(document.querySelectorAll("script"));
+        const contextScript = scripts.find((s) =>
+          s.textContent.includes("__remixContext"),
+        );
+        return contextScript ? contextScript.textContent : null;
+      });
+
+      if (!contextContent)
+        throw new Error("Could not find the Remix context script.");
+
+      const jsonString = contextContent.substring(
+        contextContent.indexOf("{"),
+        contextContent.lastIndexOf("}") + 1,
+      );
+      const remixContext = JSON.parse(jsonString);
+
+      const openBetsCount = remixContext?.state?.loaderData?.root?.betsCount;
+
       const balance = extractValue(headerProps.balance);
-      const openBetsCount = extractValue(headerProps.betsCount);
       const isAuth = extractValue(headerProps.auth);
       const freeBets = extractValue(headerProps.freeBets);
       const unreadMessageCount = extractValue(headerProps.unreadMessageCount);
@@ -2743,14 +2749,13 @@ class BetKingBookmaker {
 
       return {
         balance: parseFloat(balance),
-        openBetsCount: parseInt(openBetsCount, 10),
-        accessToken: accessToken,
+        openBetsCount: parseInt(openBetsCount || 0, 10),
         freeBets: freeBets,
         unreadMessageCount: unreadMessageCount,
         isAuth: isAuth,
       };
     } catch (error) {
-      console.error("Error in #getAccountState:", error.message);
+      console.error("[Bookmaker] Error in #getAccountState:", error.message);
       this.state = {
         status: this.constructor.Status.ERROR,
         message: `Error in getBookmakerAccountState: ${error.message}`,
@@ -2761,6 +2766,26 @@ class BetKingBookmaker {
     }
   }
 
+  /**
+   * Handles the full user sign-in process, establishing a valid session.
+   *
+   * This function automates the login via Puppeteer, persists the session cookies,
+   * and immediately scrapes the user's account page to retrieve the essential
+   * access token and initial account details (balance, free bets).
+   *
+   * @async
+   * @param {string} username - The user's account identifier (e.g., phone number or username).
+   * @param {string} password - The user's account password.
+   * @returns {Promise<{
+   * success: boolean,
+   * cookies?: Array<import('puppeteer').Cookie>,
+   * session?: Object,
+   * error?: string
+   * }>} - The result object containing the status, cookies, and session data on success.
+   * @throws {Error} Throws if navigation fails, selectors are not found, or login is rejected.
+   * @property {Object} this.session - On success, this object is populated with
+   * the full user data, including the critical `accessToken` for subsequent API calls.
+   */
   async signin(username, password) {
     this.state = {
       status: this.constructor.Status.AUTHENTICATING,
@@ -2810,17 +2835,26 @@ class BetKingBookmaker {
         );
       }
 
+      // Get cookies
       const cookies = await page.cookies();
-      await this.#saveCookies(username, cookies);
-      await page.close();
+      if (!cookies) {
+        throw new Error("Cookies could not be found after login.");
+      }
+      await this.botStore.setBookmakerCookies(cookies);
 
-      // on succesful signin get and store the session info
-	  // very important
-      this.session = await this.#getBookmakerAccountState(username);
-      if (!this.session.accessToken) {
-        console.log(this.session);
+      const accessTokenCookie = cookies.find((c) => c.name === "accessToken");
+      const accessToken = accessTokenCookie ? accessTokenCookie.value : null;
+
+      // Get access token from cookies
+      if (!accessToken) {
         throw new Error("Access token could not be found after login.");
       }
+      await this.botStore.setAccessToken(accessToken);
+      await page.close();
+
+      // Get accunt state
+      const accountState = await this.#getBookmakerAccountState(username);
+      await this.botStore.setBookmakerSession(accountState);
 
       this.state = {
         status: this.constructor.Status.AUTHENTICATED,
@@ -2829,7 +2863,7 @@ class BetKingBookmaker {
       return {
         success: true,
         cookies: cookies,
-        session: this.accountInfo,
+        accessToken,
       };
     } catch (error) {
       this.state = {
@@ -2847,14 +2881,28 @@ class BetKingBookmaker {
     }
   }
 
+  /**
+   * Retrieves the live, current account details for the authenticated user.
+   *
+   * This function is designed to **always** run a new scraping operation via
+   * `#getBookmakerAccountState` to ensure the most up-to-date information,
+   * particularly the current balance and free bet status. It overwrites the
+   * existing `this.session` data with the fresh results.
+   *
+   * @async
+   * @param {string} username - The username associated with the active session (used for logging and cookie retrieval).
+   * @returns {Promise<Object>} The full, fresh user session data object (e.g., { balance, openBetsCount, accessToken, ... }).
+   * @throws {AuthenticationError} Thrown if cookies are missing or expired, requiring a new sign-in.
+   * @throws {Error} Thrown for any general scraping or network errors.
+   * @property {Object} this.session - The retrieved fresh session data is stored here, updating the `accessToken` and all account details.
+   */
   async getAccountInfo(username) {
-    // always get live data no caching
     this.state = {
       status: this.constructor.Status.WORKING,
       message: "Refreshing account info.",
     };
     try {
-      this.session = await this.#getBookmakerAccountState(username);
+      await this.#getBookmakerAccountState(username);
       console.log(
         `[Bookmaker] Refreshed and cached account info for ${username}.`,
       );
@@ -2862,7 +2910,7 @@ class BetKingBookmaker {
         status: this.constructor.Status.AUTHENTICATED,
         message: "Session is active.",
       };
-      return this.session;
+      return this.botStore.getBookmakerSession();
     } catch (error) {
       if (error instanceof AuthenticationError) {
         this.state = {
@@ -2880,6 +2928,23 @@ class BetKingBookmaker {
     }
   }
 
+  /**
+   * Places a bet using a direct API call, leveraging the cached `accessToken`
+   * from the active session.
+   *
+   * This function avoids unnecessary scraping by prioritizing the `accessToken`
+   * stored in `this.session`. It is designed for speed and efficiency, assuming
+   * a valid session has already been established and its cookies are present.
+   *
+   * @async
+   * @param {string} username - The username (used to load associated cookies).
+   * @param {Object} data - The betting payload data to be sent to the bookmaker's API.
+   * @returns {Promise<Object>} The API response object from the bet placement, indicating success or failure details.
+   * @throws {AuthenticationError} Thrown if:
+   * 1. Cookies are missing or expired (leading to session invalidation).
+   * 2. The required `accessToken` is missing from `this.session`.
+   * @throws {Error} Thrown if the API call fails, the response indicates a rejection, or a network/puppeteer error occurs.
+   */
   async placeBet(username, data) {
     this.state = {
       status: this.constructor.Status.WORKING,
@@ -2890,7 +2955,7 @@ class BetKingBookmaker {
     try {
       console.log("[Bookmaker] Starting place bet process for", username);
 
-      const cookies = await this.#loadCookies(username);
+      const cookies = this.botStore.getBookmakerCookies();
       if (!cookies.length) {
         throw new AuthenticationError("No cookies found.");
       }
@@ -2898,11 +2963,8 @@ class BetKingBookmaker {
         throw new AuthenticationError("Cookies are expired.");
       }
 
-      const accessToken = this.session?.accessToken;
+      const accessToken = this.botStore.getAccessToken();
       if (!accessToken) {
-        // 🚨 CRITICAL: Throw Auth Error if token is missing
-        // This forces the calling code to handle a missing or stale session,
-        // likely by calling signin or getAccountInfo first.
         throw new AuthenticationError(
           "Access token is missing. Please sign in or refresh account info.",
         );

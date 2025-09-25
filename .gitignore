@@ -24,7 +24,6 @@ Thumbs.db
 .vscode/
 
 data/logs/*
-data/cookies/*
 data/edgerunner/*
 
 !data/.gitkeep

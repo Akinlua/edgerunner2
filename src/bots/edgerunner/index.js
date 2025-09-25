@@ -7,6 +7,7 @@ import { getProviderInterface } from '../../interfaces/providers/index.js';
 import chalk from 'chalk';
 import Logger from '../../core/logger.js';
 import { AuthenticationError } from '../../core/errors.js';
+import { Store } from './store.js';
 
 puppeteer.use(stealthPlugin());
 
@@ -36,7 +37,15 @@ class EdgeRunner {
 		}
 		try {
 			const browser = await this.#initializeBrowser(config);
-			const bookmaker = getBookmakerInterface(config.bookmaker.name, config.bookmaker, browser);
+			const username = config.bookmaker.username
+
+			// Create and initialize the central store
+			const edgeRunnerStore = new Store(username);
+			console.log(chalk.yellow('[EdgeRunner] -> Initializing Global Persistent State (EdgeRunnerStore)...'));
+			await edgeRunnerStore.initialize(); 
+            console.log(chalk.green('[EdgeRunner] -> State Loaded Successfully.'));
+
+			const bookmaker = getBookmakerInterface(config.bookmaker.name, config.bookmaker, browser, edgeRunnerStore);
 
 			return new EdgeRunner(config, browser, bookmaker);
 		} catch (error) {

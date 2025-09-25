@@ -5,7 +5,6 @@
 // app specific configurations
 const configurations = {
 	apiBaseUrl: "http://localhost:9090",
-	DATABASE_PATH: "./data/main.db",
 	cron: {
 		intervalMin: 10 // in minutes
 	},
