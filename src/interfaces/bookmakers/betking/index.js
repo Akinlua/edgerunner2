@@ -9,7 +9,7 @@ class BetKingBookmaker {
   constructor(config, browser) {
     this.config = config;
     this.browser = browser;
-    this.accountInfo = null;
+    this.session = null;
     this.state = {
       status: this.constructor.Status.INITIALIZING,
       message: "Bot has just started",
@@ -2592,15 +2592,6 @@ class BetKingBookmaker {
       message: `Fetching details for event: ${eventName}`,
     };
 
-    if (!matchEventDetails || !matchEventId) {
-      console.warn(
-        chalk.yellow(
-          "[Bookmaker] Could not find complete event data in Remix context for this match. Skipping.",
-        ),
-      );
-      return null;
-    }
-
     const eventSlug = this.#slugifyEventName(eventName);
     const url = `https://m.betking.com/sports/prematch/${eventId}/${eventSlug}`;
     // console.log(`[Bookmaker] Fetching data from page: .../${eventId}/${eventSlug}`);
@@ -2823,10 +2814,11 @@ class BetKingBookmaker {
       await this.#saveCookies(username, cookies);
       await page.close();
 
-      // on succesful signin get and store the account info
-      this.accountInfo = await this.#getBookmakerAccountState(username);
-      if (!this.accountInfo.accessToken) {
-        console.log(this.accountInfo);
+      // on succesful signin get and store the session info
+	  // very important
+      this.session = await this.#getBookmakerAccountState(username);
+      if (!this.session.accessToken) {
+        console.log(this.session);
         throw new Error("Access token could not be found after login.");
       }
 
@@ -2837,7 +2829,7 @@ class BetKingBookmaker {
       return {
         success: true,
         cookies: cookies,
-        accountInfo: this.accountInfo,
+        session: this.accountInfo,
       };
     } catch (error) {
       this.state = {
@@ -2856,17 +2848,13 @@ class BetKingBookmaker {
   }
 
   async getAccountInfo(username) {
-    if (this.accountInfo) {
-      console.log(`[Bookmaker] Returning cached account info for ${username}.`);
-      return this.accountInfo;
-    }
-
+    // always get live data no caching
     this.state = {
       status: this.constructor.Status.WORKING,
       message: "Refreshing account info.",
     };
     try {
-      this.accountInfo = await this.#getBookmakerAccountState(username);
+      this.session = await this.#getBookmakerAccountState(username);
       console.log(
         `[Bookmaker] Refreshed and cached account info for ${username}.`,
       );
@@ -2874,7 +2862,7 @@ class BetKingBookmaker {
         status: this.constructor.Status.AUTHENTICATED,
         message: "Session is active.",
       };
-      return this.accountInfo;
+      return this.session;
     } catch (error) {
       if (error instanceof AuthenticationError) {
         this.state = {
@@ -2910,13 +2898,15 @@ class BetKingBookmaker {
         throw new AuthenticationError("Cookies are expired.");
       }
 
-      const accountState = await this.getAccountInfo(username);
-      if (!accountState || !accountState.accessToken) {
+      const accessToken = this.session?.accessToken;
+      if (!accessToken) {
+        // 🚨 CRITICAL: Throw Auth Error if token is missing
+        // This forces the calling code to handle a missing or stale session,
+        // likely by calling signin or getAccountInfo first.
         throw new AuthenticationError(
-          "Failed to retrieve a valid access token.",
+          "Access token is missing. Please sign in or refresh account info.",
         );
       }
-      const accessToken = accountState.accessToken;
 
       page = await this.browser.newPage();
       await page.setRequestInterception(true);
