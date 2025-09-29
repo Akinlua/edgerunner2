@@ -2267,10 +2267,7 @@ class BetKingBookmaker {
       console.log("[Bookmaker] accessToken cookie expired");
       return false;
     }
-    console.log(
-      "[Bookmaker] accessToken cookie is valid until",
-      new Date(accessToken.expires * 1000),
-    );
+    console.log("[Bookmaker] accessToken cookie is valid until", new Date(accessToken.expires * 1000));
     return true;
   };
 
@@ -2292,10 +2289,7 @@ class BetKingBookmaker {
       let res = await response.json();
       return res;
     } catch (error) {
-      console.error(
-        `[Bookmaker] Error fetching API URL ${url}:`,
-        error.message,
-      );
+      console.error(`[Bookmaker] Error fetching API URL ${url}:`, error.message);
       return null;
     } finally {
       await page.evaluate(() => {
@@ -2334,15 +2328,8 @@ class BetKingBookmaker {
     }
     let meaningfulParts = parts.slice(start, end);
     if (!meaningfulParts.length) {
-      meaningfulParts = [
-        parts.reduce(
-          (longest, part) => (part.length > longest.length ? part : longest),
-          "",
-        ),
-      ];
-      console.log(
-        `[Bookmaker] No meaningful parts, using longest: "${meaningfulParts[0]}"`,
-      );
+      meaningfulParts = [parts.reduce((longest, part) => (part.length > longest.length ? part : longest), "")];
+      console.log(`[Bookmaker] No meaningful parts, using longest: "${meaningfulParts[0]}"`);
     }
     let normalized = meaningfulParts.join(" ");
     normalized = normalized.replace(/[.-]/g, " ");
@@ -2389,12 +2376,8 @@ class BetKingBookmaker {
       const formattedSearchTerm = encodeURIComponent(searchTerm.trim());
       const url = `https://sportsapicdn-mobile.betking.com/api/feeds/prematch/Search/lang/en?search=${formattedSearchTerm}`;
       const data = await this.#fetchJsonFromApi(url);
-      const matches = Array.isArray(data)
-        ? data
-        : data.matches || data.results || [];
-      const filteredMatches = matches.filter(
-        (match) => match.TeamHome && match.TeamAway,
-      );
+      const matches = Array.isArray(data) ? data : data.matches || data.results || [];
+      const filteredMatches = matches.filter((match) => match.TeamHome && match.TeamAway);
       this.state = {
         status: this.constructor.Status.IDLE,
         message: `Found ${filteredMatches.length} matches for ${searchTerm}`,
@@ -2433,20 +2416,14 @@ class BetKingBookmaker {
       const awayResults = await this.getTeamDataByName(away);
 
       const allMatches = [...(homeResults || []), ...(awayResults || [])];
-      const uniqueMatches = Array.from(
-        new Map(allMatches.map((match) => [match.IDEvent, match])).values(),
-      );
+      const uniqueMatches = Array.from(new Map(allMatches.map((match) => [match.IDEvent, match])).values());
 
       if (!uniqueMatches.length) {
-        console.log(
-          `[Bookmaker] No matches found for either "${home}" or "${away}"`,
-        );
+        console.log(`[Bookmaker] No matches found for either "${home}" or "${away}"`);
         return null;
       }
 
-      console.log(
-        `[Bookmaker] Search: "${normalizedHome}" vs "${normalizedAway}"`,
-      );
+      console.log(`[Bookmaker] Search: "${normalizedHome}" vs "${normalizedAway}"`);
       const searchableMatches = uniqueMatches.map((match) => {
         const apiHome = this.#normalizeTeamName(match.TeamHome);
         const apiAway = this.#normalizeTeamName(match.TeamAway);
@@ -2463,10 +2440,7 @@ class BetKingBookmaker {
       });
 
       const results = fuse.search({
-        $or: [
-          { combinedEventName: `${normalizedHome} - ${normalizedAway}` },
-          { combinedEventName: `${normalizedAway} - ${normalizedHome}` },
-        ],
+        $or: [{ combinedEventName: `${normalizedHome} - ${normalizedAway}` }, { combinedEventName: `${normalizedAway} - ${normalizedHome}` }],
       });
       console.log(
         `[Bookmaker] Search results for Teams ${combinedSearchTerm}`,
@@ -2494,29 +2468,18 @@ class BetKingBookmaker {
       };
 
       if (bestResult.score <= 0.6) {
-        console.log(
-          chalk.green(
-            `[Bookmaker] Found confident match - score (${bestResultPercentage.toFixed(2)}%): "${bestResult.item.EventName}" - below threshold.`,
-          ),
-        );
+        console.log(chalk.green(`[Bookmaker] Found confident match - score (${bestResultPercentage.toFixed(2)}%): "${bestResult.item.EventName}" - below threshold.`));
         return bestResult.item;
       }
 
-      console.log(
-        chalk.red(
-          `[Bookmaker] No suitable match found - score (${bestResultPercentage.toFixed(2)}%) - above threshold.`,
-        ),
-      );
+      console.log(chalk.red(`[Bookmaker] No suitable match found - score (${bestResultPercentage.toFixed(2)}%) - above threshold.`));
       return null;
     } catch (error) {
       this.state = {
         status: this.constructor.Status.ERROR,
         message: `Match search failed: ${error.message}`,
       };
-      console.error(
-        `[Bookmaker] Error in getBetKingMatchDataByTeamPair:`,
-        error.message,
-      );
+      console.error(`[Bookmaker] Error in getBetKingMatchDataByTeamPair:`, error.message);
       throw error;
     }
   }
@@ -2539,9 +2502,7 @@ class BetKingBookmaker {
       const bookmakerDate = new Date(timeA);
       const providerDate = new Date(parseInt(timeB, 10));
       const fiveMinutesInMs = 5 * 60 * 1000;
-      const timeDifference = Math.abs(
-        providerDate.getTime() - bookmakerDate.getTime(),
-      );
+      const timeDifference = Math.abs(providerDate.getTime() - bookmakerDate.getTime());
 
       if (timeDifference <= fiveMinutesInMs) {
         // console.log(`[Bookmaker] Time verification successful.`);
@@ -2602,32 +2563,21 @@ class BetKingBookmaker {
         if (window.__remixContext) {
           return window.__remixContext;
         } else {
-          throw new Error(
-            "Could not find __remixContext on the window object.",
-          );
+          throw new Error("Could not find __remixContext on the window object.");
         }
       });
 
       const loaderData = remixContentDetails?.state?.loaderData;
-      const matchEventDetails =
-        loaderData[
-          "routes/($locale).sports.prematch.$matchId.$eventName.($areaId)._index"
-        ]?.event;
+      const matchEventDetails = loaderData["routes/($locale).sports.prematch.$matchId.$eventName.($areaId)._index"]?.event;
       const matchEventId = matchEventDetails?.id;
 
       if (!matchEventDetails || !matchEventId) {
-        console.warn(
-          chalk.yellow(
-            "[Bookmaker] Could not find complete event data in Remix context for this match. Skipping.",
-          ),
-        );
+        console.warn(chalk.yellow("[Bookmaker] Could not find complete event data in Remix context for this match. Skipping."));
         return null;
       }
 
       if (matchEventId != eventId) {
-        throw new Error(
-          "Event Id mismatch, Event-Id does not match fetched Match-Details-Event-Id",
-        );
+        throw new Error("Event Id mismatch, Event-Id does not match fetched Match-Details-Event-Id");
       }
 
       this.state = {
@@ -2640,10 +2590,7 @@ class BetKingBookmaker {
         status: this.constructor.Status.ERROR,
         message: `Failed to get match details: ${error.message}`,
       };
-      console.error(
-        `[Bookmaker] Error extracting Remix JSON on page .../${eventId}/${eventSlug}`,
-        error.message,
-      );
+      console.error(`[Bookmaker] Error extracting Remix JSON on page .../${eventId}/${eventSlug}`, error.message);
       throw error;
     } finally {
       await page.close();
@@ -2676,9 +2623,7 @@ class BetKingBookmaker {
       page = await this.browser.newPage();
       await page.setRequestInterception(true);
       page.on("request", (req) => {
-        if (
-          ["image", "stylesheet", "font", "media"].includes(req.resourceType())
-        ) {
+        if (["image", "stylesheet", "font", "media"].includes(req.resourceType())) {
           req.abort();
         } else {
           req.continue();
@@ -2701,46 +2646,31 @@ class BetKingBookmaker {
       });
 
       // Get props from the Header component for other account details
-      const headerPropsString = await page.$eval(
-        'astro-island[component-export="Header"]',
-        (island) => island.getAttribute("props"),
-      );
+      const headerPropsString = await page.$eval('astro-island[component-export="Header"]', (island) => island.getAttribute("props"));
       if (!headerPropsString) {
         throw new Error("Could not find Header props.");
       }
       const headerProps = JSON.parse(headerPropsString);
-
       // Astro serializes some props as [0, value] or [1, value].
       const extractValue = (prop) => (Array.isArray(prop) ? prop[1] : prop);
-
-      // Get bets count from remix contnent
-      const contextContent = await page.evaluate(() => {
-        const scripts = Array.from(document.querySelectorAll("script"));
-        const contextScript = scripts.find((s) =>
-          s.textContent.includes("__remixContext"),
-        );
-        return contextScript ? contextScript.textContent : null;
-      });
-
-      if (!contextContent)
-        throw new Error("Could not find the Remix context script.");
-
-      const jsonString = contextContent.substring(
-        contextContent.indexOf("{"),
-        contextContent.lastIndexOf("}") + 1,
-      );
-      const remixContext = JSON.parse(jsonString);
-
-      const openBetsCount = remixContext?.state?.loaderData?.root?.betsCount;
-
       const balance = extractValue(headerProps.balance);
       const isAuth = extractValue(headerProps.auth);
       const freeBets = extractValue(headerProps.freeBets);
       const unreadMessageCount = extractValue(headerProps.unreadMessageCount);
 
-      console.log(
-        `[Bookmaker] Successfully extracted account info for ${username}`,
-      );
+      // Get bets count from remix contnent
+      const contextContent = await page.evaluate(() => {
+        const scripts = Array.from(document.querySelectorAll("script"));
+        const contextScript = scripts.find((s) => s.textContent.includes("__remixContext"));
+        return contextScript ? contextScript.textContent : null;
+      });
+      if (!contextContent) throw new Error("Could not find the Remix context script.");
+      const jsonString = contextContent.substring(contextContent.indexOf("{"), contextContent.lastIndexOf("}") + 1);
+      const remixContext = JSON.parse(jsonString);
+	  const openBetsCount = remixContext?.state?.loaderData?.root?.betsCount;
+
+
+      console.log(`[Bookmaker] Successfully extracted account info for ${username}`);
 
       this.state = {
         status: this.constructor.Status.AUTHENTICATED,
@@ -2830,9 +2760,7 @@ class BetKingBookmaker {
       if (page.url().startsWith(signinData.signedInUrl)) {
         console.log(`[Bookmaker] Logged in ${username}`);
       } else {
-        throw new Error(
-          `Login failed. Expected to be at ${signinData.signedInUrl} but ended up at ${page.url()}`,
-        );
+        throw new Error(`Login failed. Expected to be at ${signinData.signedInUrl} but ended up at ${page.url()}`);
       }
 
       // Get cookies
@@ -2870,10 +2798,7 @@ class BetKingBookmaker {
         status: this.constructor.Status.UNAUTHENTICATED,
         message: error.message,
       };
-      console.error(
-        `[Bookmaker] Error logging in to ${signinData.url}:`,
-        error.message,
-      );
+      console.error(`[Bookmaker] Error logging in to ${signinData.url}:`, error.message);
       return { success: false, error: error.message };
     } finally {
       // This finally block is no longer needed since we close the page inside the try block.
@@ -2902,15 +2827,13 @@ class BetKingBookmaker {
       message: "Refreshing account info.",
     };
     try {
-      await this.#getBookmakerAccountState(username);
-      console.log(
-        `[Bookmaker] Refreshed and cached account info for ${username}.`,
-      );
+      const accountInfo = await this.#getBookmakerAccountState(username);
+      console.log(`[Bookmaker] Refreshed and cached account info for ${username}.`);
       this.state = {
         status: this.constructor.Status.AUTHENTICATED,
         message: "Session is active.",
       };
-      return this.botStore.getBookmakerSession();
+      return accountInfo;
     } catch (error) {
       if (error instanceof AuthenticationError) {
         this.state = {
@@ -2965,17 +2888,13 @@ class BetKingBookmaker {
 
       const accessToken = this.botStore.getAccessToken();
       if (!accessToken) {
-        throw new AuthenticationError(
-          "Access token is missing. Please sign in or refresh account info.",
-        );
+        throw new AuthenticationError("Access token is missing. Please sign in or refresh account info.");
       }
 
       page = await this.browser.newPage();
       await page.setRequestInterception(true);
       page.on("request", (req) => {
-        if (
-          ["image", "stylesheet", "font", "media"].includes(req.resourceType())
-        ) {
+        if (["image", "stylesheet", "font", "media"].includes(req.resourceType())) {
           req.abort();
         } else {
           req.continue();
@@ -2992,8 +2911,7 @@ class BetKingBookmaker {
 
       const result = await page.evaluate(
         async (dataToPost, token) => {
-          const apiUrl =
-            "https://m.betking.com/sports/action/placebet?_data=routes%2F%28%24locale%29.sports.action.placebet";
+          const apiUrl = "https://m.betking.com/sports/action/placebet?_data=routes%2F%28%24locale%29.sports.action.placebet";
           const bodyPayload = new URLSearchParams();
           bodyPayload.append("data", JSON.stringify(dataToPost));
 
@@ -3036,9 +2954,7 @@ class BetKingBookmaker {
       );
 
       if (result.error) {
-        throw new Error(
-          `Bet placement failed with status ${result.status}: ${result.text}`,
-        );
+        throw new Error(`Bet placement failed with status ${result.status}: ${result.text}`);
       }
 
       const errorMessages = {
@@ -3062,17 +2978,11 @@ class BetKingBookmaker {
 
       const errorMessage = errorMessages[result.responseStatus];
       if (errorMessage) {
-        throw new Error(
-          `Bet was rejected by the server: ${errorMessage} (Status: ${result.responseStatus})`,
-        );
+        throw new Error(`Bet was rejected by the server: ${errorMessage} (Status: ${result.responseStatus})`);
       } else if (result.responseStatus !== 1) {
         // Assuming 1 is the success status code
-        const fallbackMessage = result.errorsList
-          ? JSON.stringify(result.errorsList)
-          : "Unknown reason";
-        throw new Error(
-          `Bet was rejected by the server. Status: ${result.responseStatus}, Errors: ${fallbackMessage}`,
-        );
+        const fallbackMessage = result.errorsList ? JSON.stringify(result.errorsList) : "Unknown reason";
+        throw new Error(`Bet was rejected by the server. Status: ${result.responseStatus}, Errors: ${fallbackMessage}`);
       }
 
       console.log("[Bookmaker] Bet placed successfully:", result);
