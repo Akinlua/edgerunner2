@@ -93,6 +93,16 @@ export default {
               value: `\`${result.edgerunner?.minValueBetOdds ?? "N/A"}\` / \`${result.edgerunner?.maxValueBetOdds ?? "N/A"}\``,
               inline: false,
             },
+            {
+              name: "Betting Odds Percentage",
+              value: `\`${result.edgerunner?.minValueBerPercentage ?? "N/A"}\``,
+              inline: true,
+            },
+            {
+              name: "Betting Stake Amount",
+              value: `\`${result.edgerunner?.stakeAmount ?? "N/A"}\``,
+              inline: true,
+            },
           )
           .setTimestamp()
           .setFooter({ text: "EdgeRunner Bot Status" });

@@ -701,21 +701,6 @@ class EdgeRunner {
 
   async #processGame(providerData) {
     try {
-      // Refresh auth status before every game
-      try {
-        await this.#ensureAuthenticated();
-        // console.log(chalk.blueBright(`\n[EDGERUNNER] Processing: ${providerData.home} vs ${providerData.away}`));
-      } catch (error) {
-        console.error(
-          chalk.red(
-            "[Edgerunner] Could not refresh bankroll. Staking might be based on stale data.",
-          ),
-        );
-        this.#sendLog(
-          "⚠️ **Warning:** Could not refresh bankroll before processing.",
-        );
-      }
-
       console.log(
         chalk.blueBright(
           `\n[EDGERUNNER] Processing: ${providerData.home} vs ${providerData.away}`,
@@ -937,6 +922,8 @@ class EdgeRunner {
         browserActive: !!this.browser,
         minValueBetOdds: this.edgerunnerConf.minValueBetOdds,
         maxValueBetOdds: this.edgerunnerConf.maxValueBetOdds,
+		stakeAmount: this.edgerunnerConf.fixedStake.value,
+		minValueBetPercentage: this.edgerunnerConf.minValueBetPercentage
       },
       // Grouped Connection Health & Data
       provider: providerInfo,
