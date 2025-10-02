@@ -95,7 +95,7 @@ export default {
             },
             {
               name: "Betting Odds Percentage",
-              value: `\`${result.edgerunner?.minValueBerPercentage ?? "N/A"}\``,
+              value: `\`${result.edgerunner?.minValueBetPercentage ?? "N/A"}\``,
               inline: true,
             },
             {
