@@ -1,370 +1,277 @@
+Here is a clean, well-structured Markdown (`README.md`) file for your **EdgeRunner Bot System** project. You can copy and paste it directly:
+
+---
+
+````md
 # EdgeRunner Bot System
 
-The EdgeRunner Bot System is a Node.js application for running automated betting bots that poll alerts from a provider (e.g., Pinnacle) and place bets on a bookmaker (e.g., BetKing). The system uses `child_process` to manage multiple bot instances, each with its own configuration stored in `data/edgerunner/`. This README focuses on the `EdgeRunner` class, its configuration, and how to run bots directly or via the API.
+The **EdgeRunner Bot System** is a high-speed, automated betting platform built on Node.js for identifying and executing value bets (or arbitrage opportunities). It continuously polls for alerts from an odds provider (e.g., **Pinnacle**) and places bets at a bookmaker (e.g., **BetKing**) with low latency.
 
 ## Table of Contents
 
-* [Overview](#overview)
-* [EdgeRunner Class](#edgerunner-class)
-* [Configuration Object](#configuration-object)
-* [Running a Bot Directly](#running-a-bot-directly)
-* [Running Bots via API](#running-bots-via-api)
-* [API Endpoints](#api-endpoints)
-* [Directory Structure](#directory-structure)
-* [Setup and Installation](#setup-and-installation)
-* [Troubleshooting](#troubleshooting)
+- [Overview](#overview)
+- [Use Cases and Scenarios](#use-cases-and-scenarios)
+- [EdgeRunner Class (Core Logic)](#edgerunner-class-core-logic)
+- [Inter-Process Communication (IPC) and Monitoring](#inter-process-communication-ipc-and-monitoring)
+- [Configuration Object](#configuration-object)
+- [Environment Configuration (.env files)](#environment-configuration-env-files)
+- [Running a Bot Directly (Standalone)](#running-a-bot-directly-standalone)
+- [Running Bots via API (Managed Processes)](#running-bots-via-api-managed-processes)
+- [API Endpoints](#api-endpoints)
+- [Directory Structure](#directory-structure)
+- [Setup and Installation](#setup-and-installation)
+- [Docker Usage](#docker-usage)
+- [Troubleshooting](#troubleshooting)
+
+---
 
 ## Overview
 
-The `EdgeRunner` class (`src/bots/edgerunner/index.js`) is the core of the bot system. It polls alerts from a provider’s API (e.g., `https://swordfish-production.up.railway.app/alerts/<userId>`) and places bets on a bookmaker based on the provided configuration. Bots can be run standalone by instantiating `EdgeRunner` or managed via HTTP endpoints (`/edgerunner/*`) using a Node.js server with `child_process` for process isolation.
+The `EdgeRunner` class (`src/bots/edgerunner/index.js`) is the core component. It handles:
 
-## EdgeRunner Class
+- **Polling**: Fetches value bet alerts from `provider.alertApiUrl`.
+- **Validation**: Matches alert data with bookmaker markets using fuzzy logic (`Fuse.js`).
+- **Risk Management**: Applies strategies and value filters to determine stake.
+- **Execution**: Places the bet using Puppeteer in a browser context.
 
-The `EdgeRunner` class handles:
+Each bot runs in its own child process, ensuring isolated execution and fault tolerance.
 
-* **Polling**: Fetches alerts from `provider.alertApiUrl` every `provider.interval` seconds.
-* **Betting**: Places bets on `bookmaker.name` (e.g., BetKing) using `bookmaker.username` and `bookmaker.password`.
-* **Stake Management**: Uses `edgerunner.fixedStake` or `edgerunner.stakeFraction` to determine bet amounts, with `edgerunner.minValueBetPercentage` filtering low-value bets.
+---
+
+## Use Cases and Scenarios
+
+| Use Case                | Configuration Strategy                                                                                   | Technical Requirement                                                                                  |
+|-------------------------|-----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| Bankroll Diversification | Multiple bots with different bookmaker credentials                                                       | Distributes exposure to avoid account limits or bans.                                                   |
+| Market Specialization   | Bot A (Aggressive) with `minValueBetPercentage: 1.5`, Bot B (Conservative) with `0.5`                     | Targets different risk/reward profiles.                                                                 |
+| Geographic Optimization | Assign each bot a different proxy IP                                                                      | Bypasses geo-restrictions and accesses region-specific odds.                                            |
+| Provider/Bookmaker Pairing | Run Bot A with Provider X → Bookmaker Y, and Bot B with Provider Z → Bookmaker W                  | Maximizes return by testing various combinations of providers/bookmakers.                               |
+
+---
+
+## EdgeRunner Class (Core Logic)
+
+### Capabilities
+
+- **Persistent Sessions**: Uses Puppeteer with stored cookies for fast login.
+- **Fuzzy Matching**: Matches alert teams to bookmaker teams via `Fuse.js`.
+- **Proxy Support**: All traffic can go through a proxy for geo/IP flexibility.
+- **Resilient Polling**: Retry logic with exponential backoff.
+- **High-Speed Execution**: Bets placed via direct browser-based API calls.
 
 ### Methods
 
-* `constructor(config)`: Initializes the bot with a configuration object.
-* `async initialize()`: Sets up connections (e.g., authenticates with the bookmaker).
-* `start()`: Begins polling and betting.
-* `async stop()`: Stops polling and cleans up.
-* `getStatus()`: Returns the bot’s status (e.g., `{ status: "running" }`).
+| Method           | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `constructor(config)` | Initializes with a configuration object.                                   |
+| `async initialize()` | Loads cookies, logs in to bookmaker, checks balance.                        |
+| `start()`        | Begins continuous polling and betting cycle.                                 |
+| `async stop()`   | Stops polling, closes browser, cleans resources.                            |
+| `getStatus()`    | Returns current status (running, stopped, error).                           |
+
+---
+
+## Inter-Process Communication (IPC) and Monitoring
+
+- **Architecture**: Uses `child_process.fork()` for each bot.
+- **Communication**: JSON messages over IPC between API and bot processes.
+- **Control**: Parent can send `STOP`, `UPDATE_CONFIG`, etc.
+- **Monitoring**: Bots send `STATUS_UPDATE` messages back.
+- **Discord Alerts**: Uses `.env` config to send updates to a Discord channel.
+
+---
 
 ## Configuration Object
 
-The `EdgeRunner` class requires a JSON configuration object with three sections: `provider`, `bookmaker`, and `edgerunner`. Below is the structure and purpose of each field:
+Example JSON payload for `/edgerunner/start`:
 
 ```json
 {
   "provider": {
-    "name": "pinnacle",
-    "storeData": true,
-    "interval": 2,
     "userId": "user_30I2I43w4GgKpp0wHILCzs6HJmU",
-    "alertApiUrl": "https://swordfish-production.up.railway.app/alerts/user_30I2I43w4GgKpp0wHILCzs6HJmU"
+    "name": "pinnacle",
+    "interval": 2
   },
   "bookmaker": {
-    "name": "betking",
-    "storeData": true,
-    "interval": 2,
-    "username": "07033054766",
-    "password": "A1N2S3I4"
+    "username": "08145237776",
+    "password": "147258",
+    "name": "betking"
   },
   "edgerunner": {
-    "name": "edgerunner",
-    "stakeFraction": 0.1,
-    "fixedStake": {
-      "enabled": true,
-      "value": 10
-    },
-    "minValueBetPercentage": 0
+    "fixedStake": { "enabled": true, "value": 5000 },
+    "minValueBetPercentage": 1.0
+  },
+  "proxy": {
+    "enabled": true,
+    "ip": "109.107.54.92:6001",
+    "username": "UKwokPecgB",
+    "password": "11453606"
   }
 }
-```
+````
 
 ### Field Descriptions
 
-* **provider**:
-
-  * `name` (string): Provider name (e.g., `"pinnacle"`). Used for logging and configuration.
-  * `storeData` (boolean): If `true`, stores alert data in `data/cookies/` for persistence.
-  * `interval` (number): Polling interval in seconds (e.g., `2` for every 2 seconds).
-  * `userId` (string): Unique user ID (e.g., `user_30I2I43w4GgKpp0wHILCzs6HJmU`). Must be unique across bots.
-  * `alertApiUrl` (string): URL for fetching alerts (e.g., `https://swordfish-production.up.railway.app/alerts/<userId>`).
-* **bookmaker**:
-
-  * `name` (string): Bookmaker name (e.g., `"betking"`).
-  * `storeData` (boolean): If `true`, stores bookmaker session data in `data/cookies/`.
-  * `interval` (number): Interval for bookmaker actions (e.g., checking bet status) in seconds.
-  * `username` (string): Bookmaker account username (e.g., `07033054766`). Must be unique.
-  * `password` (string): Bookmaker account password.
-* **edgerunner**:
-
-  * `name` (string): Bot name (e.g., `"edgerunner"`). Used for identification.
-  * `stakeFraction` (number): Fraction of account balance to bet if `fixedStake.enabled` is `false` (e.g., `0.1` for 10%).
-  * `fixedStake` (object):
-
-    * `enabled` (boolean): If `true`, uses a fixed bet amount; if `false`, uses `stakeFraction`.
-    * `value` (number): Fixed bet amount (e.g., `10` for $10).
-  * `minValueBetPercentage` (number): Minimum expected value percentage for placing bets (e.g., `0` to accept all bets).
-
-## Running a Bot Directly
-
-To run a bot standalone (without the API), instantiate `EdgeRunner` in a script:
-
-1. Create `run-bot.js`:
-
-   ```javascript
-   import EdgeRunner from './src/bots/edgerunner/index.js';
-
-   const config = {
-     provider: {
-       name: "pinnacle",
-       storeData: true,
-       interval: 2,
-       userId: "user_30I2I43w4GgKpp0wHILCzs6HJmU",
-       alertApiUrl: "https://swordfish-production.up.railway.app/alerts/user_30I2I43w4GgKpp0wHILCzs6HJmU"
-     },
-     bookmaker: {
-       name: "betking",
-       storeData: true,
-       interval: 2,
-       username: "07033054766",
-       password: "A1N2S3I4"
-     },
-     edgerunner: {
-       name: "edgerunner",
-       stakeFraction: 0.1,
-       fixedStake: { enabled: true, value: 10 },
-       minValueBetPercentage: 0
-     }
-   };
-
-   async function main() {
-     const bot = new EdgeRunner(config);
-     await bot.initialize();
-     bot.start();
-   }
-
-   main().catch(console.error);
-   ```
-
-2. Ensure directories exist:
-
-   ```bash
-   mkdir -p data/edgerunner data/cookies
-   chmod -R u+w data
-   ```
-
-3. Run:
-
-   ```bash
-   node run-bot.js
-   ```
-
-   **Expected Output**:
-
-   ```
-   [BotRunner] EdgeRunner started with config: (inline)
-   [Provider] STATUS: No new notifications | Cursor: <cursor>
-   ```
-
-   **Note**: This runs a single bot without process management. Use the API for multiple bots.
-
-## Running Bots via API
-
-The API (`src/server.js`) uses `child_process` to manage multiple `EdgeRunner` instances, each with its own config stored in `data/edgerunner/<botId>.json`. The server runs on `http://localhost:9090` (configurable via `.env`).
-
-### API Endpoints
-
-1. **Start a Bot** (`POST /edgerunner/start`):
-
-   * **Body**: Config object (see [Configuration Object](#configuration-object)).
-   * **Response**: `{ "message": "Bot started", "pm_id": "<botId>", "name": "edgerunner-<botId>" }`
-   * **Example**:
-
-     ```bash
-     curl -X POST http://localhost:9090/edgerunner/start -H "Content-Type: application/json" -d @config.json
-     ```
-
-     Output: `{"message":"Bot started","pm_id":"me67eauzpix13fg32rg","name":"edgerunner-me67eauzpix13fg32rg"}`
-
-2. **List Bots** (`GET /edgerunner/list`):
-
-   * **Response**: `{ "bots": [{ "pm_id": "<botId>", "name": "edgerunner-<botId>", "status": "online" }, ...] }`
-   * **Example**:
-
-     ```bash
-     curl http://localhost:9090/edgerunner/list
-     ```
-
-     Output: `{"bots":[{"pm_id":"me67eauzpix13fg32rg","name":"edgerunner-me67eauzpix13fg32rg","status":"online"}]}`
-
-3. **Get Bot Status** (`GET /edgerunner/status/:id`):
-
-   * **Response**: `{ "message": "Bot status", "pm_id": "<botId>", "status": "<status>" }`
-   * **Example**:
-
-     ```bash
-     curl http://localhost:9090/edgerunner/status/me67eauzpix13fg32rg
-     ```
-
-     Output: `{"message":"Bot status","pm_id":"me67eauzpix13fg32rg","status":"online"}`
-
-4. **Stop a Bot** (`POST /edgerunner/stop/:id`):
-
-   * **Response**: `{ "message": "Bot stopped", "pm_id": "<botId>" }`
-   * **Example**:
-
-     ```bash
-     curl -X POST http://localhost:9090/edgerunner/stop/me67eauzpix13fg32rg
-     ```
-
-     Output: `{"message":"Bot stopped","pm_id":"me67eauzpix13fg32rg"}`
-
-5. **Update Bot Config** (`POST /edgerunner/config/:id`):
-
-   * **Body**: `{ "fixedStake": { "enabled": true, "value": 15 }, "stakeFraction": 0.2, "minValueBetPercentage": 1 }`
-   * **Response**: `{ "message": "Bot configuration updated", "pm_id": "<botId>" }`
-   * **Example**:
-
-     ```bash
-     curl -X POST http://localhost:9090/edgerunner/config/me67eauzpix13fg32rg -H "Content-Type: application/json" -d '{"fixedStake":{"enabled":true,"value":15},"stakeFraction":0.2,"min
-     ```
-
-
-ValueBetPercentage":1}'
-```
-Output: `{"message":"Bot configuration updated","pm_id":"me67eauzpix13fg32rg"}`
-
-## Directory Structure
-
-* `data/edgerunner/` — Stores JSON config files per bot (e.g., `me67eauzpix13fg32rg.json`).
-* `data/cookies/` — Stores cookies/session data per bot and bookmaker.
-* `src/bots/edgerunner/` — EdgeRunner bot implementation.
-* `src/server.js` — Express API server managing bot child processes.
-
-## Setup and Installation
-
-1. Clone repository:
-
-   ```bash
-   git clone <repo-url>
-   cd edgerunner-bot
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Create necessary directories:
-
-   ```bash
-   mkdir -p data/edgerunner data/cookies
-   chmod -R u+w data
-   ```
-
-4. Create `.env` file if you want to change the default port (default `9090`):
-
-   ```
-   PORT=9090
-   ```
-
-5. Start the server:
-
-   ```bash
-   node src/server.js
-   ```
-
-## Troubleshooting
-
-* If you get permission errors writing to `data/`, check directory ownership and permissions.
-* Ensure `provider.userId` and `bookmaker.username` are unique per bot.
-* Check logs printed by each child process in the terminal or use the API to query bot statuses.
+| Section      | Field                        | Type   | Description                                           |
+| ------------ | ---------------------------- | ------ | ----------------------------------------------------- |
+| `provider`   | `userId`                     | string | Unique identifier.                                    |
+|              | `alertApiUrl`                | string | Source of real-time alerts.                           |
+| `bookmaker`  | `username`, `password`       | string | Login credentials.                                    |
+|              | `name`                       | string | Bookmaker module name (e.g., "betking").              |
+| `edgerunner` | `fixedStake`                 | object | `{ enabled: boolean, value: number }`                 |
+|              | `stakeFraction`              | number | If no fixed stake, use bankroll fraction (e.g., 0.1). |
+|              | `minValueBetPercentage`      | number | Minimum expected value to trigger a bet.              |
+| `proxy`      | `ip`, `username`, `password` | string | Proxy credentials and IP.                             |
 
 ---
 
-## Starting the EdgeRunner Bot
+## Environment Configuration (.env files)
 
-You can start the EdgeRunner bot either locally or on a deployed server by sending a POST request to the appropriate endpoint with your bot configuration.
+Environment variables are stored in `env/`:
 
-### Start Bot Locally
+```bash
+# .env.development
+
+NODE_ENV=development
+PORT=9090
+
+MAX_EDGERUNNER_INSTANCES=10
+
+DISCORD_TOKEN=Your_Bot_Token
+DISCORD_CLIENT_ID=123456789012345678
+DISCORD_GUILD_ID=111111111111111111
+DISCORD_BOTS_CATEGORY_ID=222222222222222222
+```
+
+---
+
+## Running a Bot Directly (Standalone)
+
+For development/debugging only.
+
+1. Create `run-bot.js` with your config.
+2. Setup directories:
+
+```bash
+mkdir -p data/edgerunner data/cookies
+chmod -R u+w data
+```
+
+3. Run:
+
+```bash
+node run-bot.js
+```
+
+---
+
+## Running Bots via API (Managed Processes)
+
+### Start API Server
+
+```bash
+npm run dev    # Development
+npm start      # Production
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint                 | Description                           |
+| ------ | ------------------------ | ------------------------------------- |
+| POST   | `/edgerunner/start`      | Launch a new bot with config JSON.    |
+| GET    | `/edgerunner/list`       | List all bots with current status.    |
+| GET    | `/edgerunner/status/:id` | Get details for a specific bot.       |
+| POST   | `/edgerunner/stop/:id`   | Gracefully stop a bot.                |
+| POST   | `/edgerunner/config/:id` | Dynamically update bot configuration. |
+
+### Example: Start Bot via cURL
 
 ```bash
 curl --location 'http://localhost:9090/edgerunner/start' \
 --header 'Content-Type: application/json' \
 --data '{
-    "provider": {
-        "userId": "user_30I2I43w4GgKpp0wHILCzs6HJmU"
-    },
-    "bookmaker": {
-        "username": "07033054766",
-        "password": "A1N2S3I4"
-    },
-    "edgerunner": {
-        "fixedStake": {
-            "enabled": true,
-            "value": 10
-        }
-    },
-    "proxy": {
-        "enabled": true,
-        "ip": "109.107.54.237:6001",
-        "username": "UKwokPecgB",
-        "password": "11453606"
-    }
-}'
-```
-
-### Start Bot on Deployed Server
-
-```bash
-curl --location 'http://46.202.194.108:9090/edgerunner/start' \
---header 'Content-Type: application/json' \
---data '{
-    "provider": {
-        "userId": "user_30I2I43w4GgKpp0wHILCzs6HJmU"
-    },
-    "bookmaker": {
-        "username": "08145237776",
-        "password": "147258"
-    },
-    "edgerunner": {
-        "fixedStake": {
-            "enabled": true,
-            "value": 5000
-        }
-    },
-    "proxy": {
-        "enabled": true,
-        "ip": "109.107.54.92:6001",
-        "username": "UKwokPecgB",
-        "password": "11453606"
-    }
+  "provider": { "userId": "user_30I2I43w4GgKpp0wHILCzs6HJmU", "name": "pinnacle", "interval": 2 },
+  "bookmaker": { "username": "08145237776", "password": "147258", "name": "betking" },
+  "edgerunner": { "fixedStake": { "enabled": true, "value": 5000 }, "minValueBetPercentage": 1.0 },
+  "proxy": { "enabled": true, "ip": "109.107.54.92:6001", "username": "UKwokPecgB", "password": "11453606" }
 }'
 ```
 
 ---
 
-## Docker Usage
+## Directory Structure
 
-You can run the EdgeRunner bot system using Docker to simplify setup and process management.
+| Path                   | Description                                  |
+| ---------------------- | -------------------------------------------- |
+| `data/edgerunner/`     | Stores runtime bot configurations.           |
+| `env/`                 | Environment files (`.env.*`).                |
+| `src/bots/edgerunner/` | Core EdgeRunner class logic.                 |
+| `src/server.js`        | API server that manages bot child processes. |
 
-### Build and Run Docker Container
+---
+
+## Setup and Installation
 
 ```bash
-# Build the Docker image (run from project root)
-docker build -t edgerunner-bot .
+# 1. Clone repo
+git clone <repo-url> && cd edgerunner-bot
 
-# Run container in foreground (logs output to terminal)
-docker run --rm -p 9090:9090 edgerunner-bot
+# 2. Install dependencies
+npm install
 
-# Or run detached (in background)
-docker run -d -p 9090:9090 --name edgerunner edgerunner-bot
+# 3. Create required directories
+mkdir -p data/edgerunner data/cookies && chmod -R u+w data
+
+# 4. Configure environment
+#    Add .env files in the env/ directory
+
 ```
 
-### Viewing Logs
 
-* If you run the container **without** the `-d` flag (foreground), logs appear directly in your terminal.
-* If running **detached** (`-d`), container runs in background. To view logs, use:
+# 5. Start server
+
+npm run dev    # OR
+npm start
+
+````
+
+---
+
+## Docker Usage
+
+### Build & Run
+
+```bash
+# Build Docker image
+docker build -t edgerunner-bot .
+
+# Run container and expose API port
+docker run -d -p 9090:9090 --name edgerunner edgerunner-bot
+````
+
+### Logs
 
 ```bash
 docker logs -f edgerunner
 ```
 
-### Stopping and Restarting Container
+---
 
-```bash
-# Stop the running container
-docker stop edgerunner
+## Troubleshooting
 
-# Start it again (detached)
-docker start edgerunner
+* **Permission Errors**: Ensure `data/` has correct write permissions.
+* **Unique IDs**: Each bot must have a unique `provider.userId` and `bookmaker.username`.
+* **Crashing Bots**: Use the API to check status logs. Errors from child processes are streamed to the main server console.
+* **Rate Limits**: Avoid reusing same account credentials across multiple bots.
+
+---
+
+> **Note**: For best results in production, run behind a process manager like PM2 or inside Docker with resource limits.
+
+```
+
+
 ```
 
