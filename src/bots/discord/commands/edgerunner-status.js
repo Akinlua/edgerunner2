@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import configurations from "../../../../configurations/index.js";
 
 const apiBase = `${configurations.apiBaseUrl}/edgerunner`;
@@ -10,7 +10,7 @@ export default {
     .addStringOption((opt) => opt.setName("username").setDescription("The bookmaker account username of the bot.").setRequired(true)),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: MessageFlags.Ephemeral });
+    await interaction.deferReply({ ephemeral: true });
 
     const pm_id = interaction.options.getString("username");
 
@@ -69,6 +69,11 @@ export default {
             // 3. BETTING STATS
             // =========================================================
             {
+              name: "Open Bets",
+              value: `🎫 \`${result.bookmaker?.openBets ?? "N/A"}\``,
+              inline: true,
+            },
+            {
               name: "Today Bets",
               value: `📈 \`${result.edgerunner?.betsPlacedToday ?? 0}\``,
               inline: true,
@@ -76,11 +81,6 @@ export default {
             {
               name: "Total Bets",
               value: `🧾 \`${result.edgerunner?.totalBetsPlaced ?? 0}\``,
-              inline: true,
-            },
-            {
-              name: "Open Bets",
-              value: `🎫 \`${result.bookmaker?.openBets ?? "N/A"}\``,
               inline: true,
             },
             {

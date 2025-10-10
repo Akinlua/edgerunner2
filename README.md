@@ -188,17 +188,61 @@ npm start      # Production
 
 ### Example: Start Bot via cURL
 
+### Start Bot Locally
+
 ```bash
 curl --location 'http://localhost:9090/edgerunner/start' \
 --header 'Content-Type: application/json' \
 --data '{
-  "provider": { "userId": "user_30I2I43w4GgKpp0wHILCzs6HJmU", "name": "pinnacle", "interval": 2 },
-  "bookmaker": { "username": "08145237776", "password": "147258", "name": "betking" },
-  "edgerunner": { "fixedStake": { "enabled": true, "value": 5000 }, "minValueBetPercentage": 1.0 },
-  "proxy": { "enabled": true, "ip": "109.107.54.92:6001", "username": "UKwokPecgB", "password": "11453606" }
+    "provider": {
+        "userId": "user_30I2I43w4GgKpp0wHILCzs6HJmU"
+    },
+    "bookmaker": {
+        "username": "07033054766",
+        "password": "A1N2S3I4"
+    },
+    "edgerunner": {
+        "fixedStake": {
+            "enabled": true,
+            "value": 10
+        }
+    },
+    "proxy": {
+        "enabled": true,
+        "ip": "109.107.54.237:6001",
+        "username": "UKwokPecgB",
+        "password": "11453606"
+    }
 }'
 ```
 
+### Start Bot on Deployed Server
+
+```bash
+curl --location 'https://edge-runner-p35d.onrender.com/edgerunner/start' \
+--header 'Content-Type: application/json' \
+--data '{
+    "provider": {
+        "userId": "user_30I2I43w4GgKpp0wHILCzs6HJmU"
+    },
+    "bookmaker": {
+        "username": "07033054766",
+        "password": "A1N2S3I4"
+    },
+    "edgerunner": {
+        "fixedStake": {
+            "enabled": true,
+            "value": 10
+        }
+    },
+    "proxy": {
+        "enabled": true,
+        "ip": "109.107.54.237:6001",
+        "username": "UKwokPecgB",
+        "password": "11453606"
+    }
+}'
+```
 ---
 
 ## Directory Structure

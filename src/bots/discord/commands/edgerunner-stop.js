@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, MessageFlags } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import configurations from "../../../../configurations/index.js";
 
 const apiBase = `${configurations.apiBaseUrl}/edgerunner`;
@@ -10,7 +10,7 @@ export default
 			.setDescription("Stop a running bot")
 			.addStringOption(opt => opt.setName("username").setDescription("The boookmaker account username of the bot to stop").setRequired(true)),
 		async execute(interaction) {
-			await interaction.deferReply({ ephemeral: MessageFlags.Ephemeral });
+			await interaction.deferReply({ ephemeral: true });
 			const pm_id = interaction.options.getString("username");
 			try {
 				const response = await fetch(`${apiBase}/stop/${pm_id}`, { method: "POST" });

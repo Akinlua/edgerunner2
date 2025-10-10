@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, MessageFlags } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import configurations from "../../../../configurations/index.js";
 
 const apiBase = `${configurations.apiBaseUrl}/edgerunner`;
@@ -9,7 +9,7 @@ export default
 			.setName("runner-list")
 			.setDescription("List all running bots"),
 		async execute(interaction) {
-			await interaction.deferReply({ ephemeral: MessageFlags.Ephemeral });
+			await interaction.deferReply({ ephemeral: true });
 			try {
 				const response = await fetch(`${apiBase}/list`);
 				const result = await response.json();

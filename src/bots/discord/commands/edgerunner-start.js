@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, MessageFlags } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import configurations from "../../../../configurations/index.js";
 
 const apiBase = `${configurations.apiBaseUrl}/edgerunner`;
@@ -41,7 +41,7 @@ export default
 					.setDescription("Password for the proxy (only if use-proxy is true)")
 					.setRequired(false)),
 		async execute(interaction) {
-			await interaction.deferReply({ ephemeral: MessageFlags.Ephemeral });
+			await interaction.deferReply({ ephemeral: true });
 
 			const username = interaction.options.getString("username");
 			const password = interaction.options.getString("password");
