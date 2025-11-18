@@ -25,7 +25,13 @@ export default {
                .setDescription("Set the minimum odds to place a bet (e.g., 1.45)."))
         .addNumberOption(opt =>
             opt.setName("maxvaluebetodds")
-               .setDescription("Set the maximum odds to place a bet (e.g., 4.0).")),
+               .setDescription("Set the maximum odds to place a bet (e.g., 4.0)."))
+        .addBooleanOption(opt =>
+            opt.setName("placement-single")
+               .setDescription("Enable or disable single bets"))
+        .addBooleanOption(opt =>
+            opt.setName("placement-multiple")
+               .setDescription("Enable or disable multiple bets")),
     
     async execute(interaction) {
 		await interaction.deferReply({ ephemeral: true });
@@ -36,8 +42,10 @@ export default {
         const minValueBetPercentage = interaction.options.getNumber("minvaluebetpercentage");
         const minValueBetOdds = interaction.options.getNumber("minvaluebetodds");
         const maxValueBetOdds = interaction.options.getNumber("maxvaluebetodds");
+        const placementSingle = interaction.options.getBoolean("placement-single");
+        const placementMultiple = interaction.options.getBoolean("placement-multiple");
 
-        const optionsProvided = [fixedStake, stakeFraction, minValueBetPercentage, minValueBetOdds, maxValueBetOdds];
+        const optionsProvided = [fixedStake, stakeFraction, minValueBetPercentage, minValueBetOdds, maxValueBetOdds, placementSingle, placementMultiple];
         if (optionsProvided.every(opt => opt === null)) {
             return await interaction.editReply("❌ You must provide at least one configuration option to update.");
         }
@@ -58,6 +66,11 @@ export default {
         }
         if (maxValueBetOdds !== null) {
             payload.edgerunner.maxValueBetOdds = maxValueBetOdds;
+        }
+        if (placementSingle !== null || placementMultiple !== null) {
+            payload.edgerunner.betPlacement = {};
+            if (placementSingle !== null) payload.edgerunner.betPlacement.single = placementSingle;
+            if (placementMultiple !== null) payload.edgerunner.betPlacement.multiple = placementMultiple;
         }
 
         try {
