@@ -15,6 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const bots = new Map();
 
 export async function startBot(req, res) {
+  console.log("Bot started")
   const config = createEdgeRunnerConfig(req.body);
   if (
     !config.provider.userId ||
