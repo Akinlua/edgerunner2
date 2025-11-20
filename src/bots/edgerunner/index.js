@@ -586,7 +586,7 @@ class EdgeRunner {
       this.logger.logPendingBet({ detailedBookmakerData, valueBet, stakeAmount });
 
       const placement = this.edgerunnerConf?.betPlacement || { single: false, multiple: true };
-
+      console.log(`About to place bet, placement for single is ${placement.single} and for multiple is ${placement.multiple}`)
       // Place single bet if enabled
       if (placement.single) {
         try {
