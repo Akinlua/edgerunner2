@@ -2762,6 +2762,7 @@ class BetKingBookmaker {
         const stamp = new Date().toISOString().replace(/[:.]/g, "-");
         const screenshotPath = `screenshots/betking-username-not-found-${stamp}.png`;
         await page.screenshot({ path: screenshotPath, fullPage: true });
+        console.log(`screenshot saved`)
         throw new Error("Username field not found. Verify selector.");
       });
       await page.type("#username", signinData.username);
