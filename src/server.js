@@ -12,6 +12,7 @@ import {
 } from "discord.js";
 import configurations from "../configurations/index.js";
 import edgeRunnerRoutes from "./routes/edgerunner.js";
+import * as edgeRunnerController from "./controllers/edgerunner.js";
 import chalk from "chalk";
 import nodeCron from "node-cron";
 import path from "path";
@@ -21,26 +22,11 @@ import { fileURLToPath } from 'url'
 const PORT = configurations.PORT || 9090;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-async function cleanupOldConfigs() {
+async function ensureDataDirs() {
 	const configDir = path.join(__dirname, '../data/edgerunner');
 	try {
-		await fs.access(configDir);
-		const files = await fs.readdir(configDir);
-		const deletePromises = [];
-		for (const file of files) {
-			if (file.endsWith('.json')) {
-				deletePromises.push(fs.unlink(path.join(configDir, file)));
-			}
-		}
-		await Promise.all(deletePromises);
-		console.log('[Cleanup] Old bot configs removed successfully.');
-	} catch (error) {
-		if (error.code === 'ENOENT') {
-			console.log('[Cleanup] No old configs found, directory does not exist.');
-			return;
-		}
-		console.error('[Cleanup] Error during old config cleanup:', error);
-	}
+		await fs.mkdir(configDir, { recursive: true });
+	} catch {}
 }
 
 // Initializes and starts the Discord bot client.
@@ -144,7 +130,7 @@ function startKeepAlive() {
 
 // The main application function to set up and run the server.
 async function main() {
-	await cleanupOldConfigs();
+	await ensureDataDirs();
 	const app = express();
 	app.use(morgan("dev"));
 	app.use(express.json());
@@ -155,8 +141,9 @@ async function main() {
 	app.use('/edgerunner', edgeRunnerRoutes);
 
 	try {
-		startDiscordBot();
+		await startDiscordBot();
 		startKeepAlive();
+		await edgeRunnerController.rehydrateExistingBots();
 
 		app.listen(PORT, () => {
 			console.log(`[Server] Server is running on http://localhost:${PORT}`);
