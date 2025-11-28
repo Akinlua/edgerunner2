@@ -26,7 +26,7 @@ const baseConfig = {
 		delay: 10, // 30 to slow
 		betPlacement: {
 			single: true,
-			multiple: true
+			multiple: false
 		}
 	},
 	proxy: {
