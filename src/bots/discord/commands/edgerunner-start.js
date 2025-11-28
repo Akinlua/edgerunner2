@@ -30,7 +30,7 @@ export default
 					.setRequired(false))
 			.addBooleanOption(option =>
 				option.setName("placement-multiple")
-					.setDescription("Enable placing multiple bets (default: true)")
+					.setDescription("Enable placing multiple bets (default: false)")
 					.setRequired(false))
 			.addBooleanOption(option =>
 				option.setName("use-proxy")
