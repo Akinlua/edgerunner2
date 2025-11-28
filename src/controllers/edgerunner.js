@@ -123,11 +123,6 @@ export async function startBot(req, res) {
     child.on("exit", async (code) => {
       console.log(`[Bot ${botId}] Process exited with code ${code}`);
       bots.delete(botId);
-      try {
-        await fs.unlink(configPath);
-      } catch (err) {
-        // Ignore if file is already gone
-      }
     });
 
     bots.set(botId, child); // Replace placeholder with the real child process
@@ -151,6 +146,37 @@ export async function startBot(req, res) {
       .status(500)
       .json({ error: "Failed to start bot. " + error.message });
   }
+}
+
+export async function rehydrateExistingBots() {
+  const configsDir = path.join(__dirname, '../../data/edgerunner');
+  try {
+    const files = await fs.readdir(configsDir);
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+      const botId = path.basename(file, '.json');
+      if (bots.has(botId)) continue;
+      const configPath = path.join(configsDir, file);
+      const child = fork(path.join(__dirname, '../bots/edgerunner/instance.js'), [], { env: { CONFIG_PATH: configPath }, stdio: ["pipe", "pipe", "pipe", "ipc"] });
+      child.on("message", async (msg) => {
+        if (msg.type?.toLowerCase() === "log" && msg.message) {
+          try {
+            const cfg = JSON.parse(await fs.readFile(configPath, "utf8"));
+            const logChannel = await client.channels.fetch(cfg.discordChannelId);
+            if (logChannel) await logChannel.send(msg.message);
+          } catch {}
+        }
+      });
+      child.stdout.on("data", (data) => console.log(`[Bot ${botId}] stdout: ${data.toString().trim()}`));
+      child.stderr.on("data", (data) => console.error(`[Bot ${botId}] stderr: ${data.toString().trim()}`));
+      child.on("error", (err) => console.error(`[Bot ${botId}] Process error:`, err));
+      child.on("exit", async (code) => {
+        console.log(`[Bot ${botId}] Process exited with code ${code}`);
+        bots.delete(botId);
+      });
+      bots.set(botId, child);
+    }
+  } catch {}
 }
 
 export async function updateConfig(req, res) {
