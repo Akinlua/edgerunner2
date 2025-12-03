@@ -3337,6 +3337,9 @@ class BetKingBookmaker {
         timeout: 60000,
       });
 
+      if (data?.betCoupon?.couponTypeId === 2 || data?.betCoupon?.couponType === 2) {
+        console.log("[Bookmaker] Multiple bet payload:", JSON.stringify(data));
+      }
       const result = await page.evaluate(
         async (dataToPost, token) => {
           const apiUrl = "https://m.betking.com/sports/action/placebet?_data=routes%2F%28%24locale%29.sports.action.placebet";
