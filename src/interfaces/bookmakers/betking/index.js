@@ -3407,6 +3407,8 @@ class BetKingBookmaker {
         415: "Free Bet is not available",
       };
 
+      console.log("[Bookmaker] Raw API Response:", JSON.stringify(result, null, 2));
+
       const errorMessage = errorMessages[result.responseStatus];
       if (errorMessage) {
         throw new Error(`Bet was rejected by the server: ${errorMessage} (Status: ${result.responseStatus})`);
