@@ -2731,109 +2731,131 @@ class BetKingBookmaker {
    * the full user data, including the critical `accessToken` for subsequent API calls.
    */
   async signin(username, password) {
-    this.state = {
-      status: this.constructor.Status.AUTHENTICATING,
-      message: "Starting sign-in process.",
-    };
-    const signinData = {
-      username: username,
-      password: password,
-      url: "https://m.betking.com/my-accounts/login?urlAfterLogin=/",
-      signedInUrl: "https://m.betking.com/",
-    };
+    const maxRetries = 3;
+    let lastError = null;
 
-    let page;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      this.state = {
+        status: this.constructor.Status.AUTHENTICATING,
+        message: `Starting sign-in process (Attempt ${attempt}/${maxRetries}).`,
+      };
+      const signinData = {
+        username: username,
+        password: password,
+        url: "https://m.betking.com/my-accounts/login?urlAfterLogin=/",
+        signedInUrl: "https://m.betking.com/",
+      };
 
-    try {
-      page = await this.browser.newPage();
-      await page.setRequestInterception(true);
-      page.on("request", (req) => {
-        const resourceType = req.resourceType();
-        if (["image", "stylesheet", "font", "media"].includes(resourceType)) {
-          req.abort();
+      let page;
+
+      try {
+        console.log(`[Bookmaker] Sign-in attempt ${attempt} of ${maxRetries}...`);
+        page = await this.browser.newPage();
+        await page.setRequestInterception(true);
+        page.on("request", (req) => {
+          const resourceType = req.resourceType();
+          if (["image", "stylesheet", "font", "media"].includes(resourceType)) {
+            req.abort();
+          } else {
+            req.continue();
+          }
+        });
+
+        await page.goto(signinData.url, { waitUntil: "load", timeout: 60_000 });
+
+        const ssDir = path.join(process.cwd(), "data", "screenshots");
+        fs.mkdirSync(ssDir, { recursive: true });
+        const preStamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const prePath = path.join(ssDir, `betking-pre-username-check-${preStamp}.png`);
+        await page.screenshot({ path: prePath, fullPage: true });
+        // console.log(`[Bookmaker] Screenshot saved (pre-check): ${prePath}`);
+
+        await page.waitForSelector("#username", { timeout: 60_000 }).catch(async () => {
+          const failStamp = new Date().toISOString().replace(/[:.]/g, "-");
+          const failPath = path.join(ssDir, `betking-username-not-found-${failStamp}.png`);
+          await page.screenshot({ path: failPath, fullPage: true });
+          console.log(`[Bookmaker] Screenshot saved (failure): ${failPath}`);
+          throw new Error("Username field not found. Verify selector.");
+        });
+        await page.type("#username", signinData.username);
+
+        const postStamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const postPath = path.join(ssDir, `betking-post-username-check-${postStamp}.png`);
+        await page.screenshot({ path: postPath, fullPage: true });
+        // console.log(`[Bookmaker] Screenshot saved (post-check): ${postPath}`);
+
+        await page.waitForSelector("#password", { timeout: 60_000 }).catch(() => {
+          throw new Error("Password field not found. Verify selector.");
+        });
+        await page.type("#password", signinData.password);
+
+        await page.keyboard.press("Enter");
+
+        await page.waitForNavigation({ waitUntil: "load", timeout: 60_000 });
+        if (page.url().startsWith(signinData.signedInUrl)) {
+          console.log(`[Bookmaker] Logged in ${username}`);
         } else {
-          req.continue();
+          throw new Error(`Login failed. Expected to be at ${signinData.signedInUrl} but ended up at ${page.url()}`);
         }
-      });
 
-      await page.goto(signinData.url, { waitUntil: "load", timeout: 60_000 });
+        // Get cookies
+        const cookies = await page.cookies();
+        if (!cookies) {
+          throw new Error("Cookies could not be found after login.");
+        }
 
-      const ssDir = path.join(process.cwd(), "data", "screenshots");
-      fs.mkdirSync(ssDir, { recursive: true });
-      const preStamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const prePath = path.join(ssDir, `betking-pre-username-check-${preStamp}.png`);
-      await page.screenshot({ path: prePath, fullPage: true });
-      console.log(`[Bookmaker] Screenshot saved (pre-check): ${prePath}`);
+        console.log(`[Bookmaker] Cookies found for ${username}: ${JSON.stringify(cookies)}`);
+        await this.botStore.setBookmakerCookies(cookies);
 
-      await page.waitForSelector("#username", { timeout: 60_000 }).catch(async () => {
-        const failStamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const failPath = path.join(ssDir, `betking-username-not-found-${failStamp}.png`);
-        await page.screenshot({ path: failPath, fullPage: true });
-        console.log(`[Bookmaker] Screenshot saved (failure): ${failPath}`);
-        throw new Error("Username field not found. Verify selector.");
-      });
-      await page.type("#username", signinData.username);
+        const accessTokenCookie = cookies.find((c) => c.name === "accessToken");
+        const accessToken = accessTokenCookie ? accessTokenCookie.value : null;
 
-      const postStamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const postPath = path.join(ssDir, `betking-post-username-check-${postStamp}.png`);
-      await page.screenshot({ path: postPath, fullPage: true });
-      console.log(`[Bookmaker] Screenshot saved (post-check): ${postPath}`);
+        // Get access token from cookies
+        if (!accessToken) {
+          throw new Error("Access token could not be found after login.");
+        }
+        await this.botStore.setAccessToken(accessToken);
+        await page.close();
 
-      await page.waitForSelector("#password", { timeout: 60_000 }).catch(() => {
-        throw new Error("Password field not found. Verify selector.");
-      });
-      await page.type("#password", signinData.password);
+        // Get accunt state
+        const accountState = await this.#getBookmakerAccountState(username);
+        await this.botStore.setBookmakerSession(accountState);
 
-      await page.keyboard.press("Enter");
+        this.state = {
+          status: this.constructor.Status.AUTHENTICATED,
+          message: "Sign-in successful.",
+        };
+        return {
+          success: true,
+          cookies: cookies,
+          accessToken,
+        };
+      } catch (error) {
+        lastError = error;
+        console.error(`[Bookmaker] Sign-in attempt ${attempt} failed: ${error.message}`);
 
-      await page.waitForNavigation({ waitUntil: "load", timeout: 60_000 });
-      if (page.url().startsWith(signinData.signedInUrl)) {
-        console.log(`[Bookmaker] Logged in ${username}`);
-      } else {
-        throw new Error(`Login failed. Expected to be at ${signinData.signedInUrl} but ended up at ${page.url()}`);
+        // Ensure page is closed before next attempt
+        if (page && !page.isClosed()) {
+          try {
+            await page.close();
+          } catch (closeErr) {
+            console.error("[Bookmaker] Error closing page during retry cleanup:", closeErr.message);
+          }
+        }
+
+        if (attempt < maxRetries) {
+          console.log(`[Bookmaker] Retrying sign-in in 2 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
       }
-
-      // Get cookies
-      const cookies = await page.cookies();
-      if (!cookies) {
-        throw new Error("Cookies could not be found after login.");
-      }
-      await this.botStore.setBookmakerCookies(cookies);
-
-      const accessTokenCookie = cookies.find((c) => c.name === "accessToken");
-      const accessToken = accessTokenCookie ? accessTokenCookie.value : null;
-
-      // Get access token from cookies
-      if (!accessToken) {
-        throw new Error("Access token could not be found after login.");
-      }
-      await this.botStore.setAccessToken(accessToken);
-      await page.close();
-
-      // Get accunt state
-      const accountState = await this.#getBookmakerAccountState(username);
-      await this.botStore.setBookmakerSession(accountState);
-
-      this.state = {
-        status: this.constructor.Status.AUTHENTICATED,
-        message: "Sign-in successful.",
-      };
-      return {
-        success: true,
-        cookies: cookies,
-        accessToken,
-      };
-    } catch (error) {
-      this.state = {
-        status: this.constructor.Status.UNAUTHENTICATED,
-        message: error.message,
-      };
-      console.error(`[Bookmaker] Error logging in to ${signinData.url}:`, error.message);
-      return { success: false, error: error.message };
-    } finally {
-      // This finally block is no longer needed since we close the page inside the try block.
-      // await page.close();
     }
+
+    // If we exit the loop, all retries failed
+    this.state = {
+      status: this.constructor.Status.UNAUTHENTICATED,
+      message: lastError ? lastError.message : "Checking failed after retries",
+    };
+    return { success: false, error: lastError ? lastError.message : "Unknown error after retries" };
   }
 
   /**
@@ -3478,7 +3500,7 @@ class BetKingBookmaker {
       }
 
       this.state = { status: this.constructor.Status.IDLE, message: "Live balance fetched." };
-      return mainWallet.balance; 
+      return mainWallet.balance;
     } catch (error) {
       if (error instanceof AuthenticationError) {
         throw error;
