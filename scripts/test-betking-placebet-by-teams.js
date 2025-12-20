@@ -53,18 +53,18 @@ function pickMarketAndSelection(matchDetails) {
 
   const normalize = (s) => String(s || "").toLowerCase();
 
-  const totalsMarket = markets.find((m) => normalize(m.name).includes("total"));
-  if (totalsMarket && Array.isArray(totalsMarket.selections)) {
-    const isTargetLine = (sel) => {
-      const val = String(sel?.specialValue ?? sel?.line ?? "");
-      return val.includes("172.5");
-    };
-    let overSel = totalsMarket.selections.find((s) => normalize(s?.name) === "over" && isTargetLine(s));
-    if (!overSel) overSel = totalsMarket.selections.find((s) => normalize(s?.name) === "over");
-    if (overSel && overSel?.odd && typeof overSel.odd.value === "number") {
-      return { market: totalsMarket, selection: overSel };
-    }
-  }
+  // const totalsMarket = markets.find((m) => normalize(m.name).includes("total"));
+  // if (totalsMarket && Array.isArray(totalsMarket.selections)) {
+  //   const isTargetLine = (sel) => {
+  //     const val = String(sel?.specialValue ?? sel?.line ?? "");
+  //     return val.includes("172.5");
+  //   };
+  //   let overSel = totalsMarket.selections.find((s) => normalize(s?.name) === "over" && isTargetLine(s));
+  //   if (!overSel) overSel = totalsMarket.selections.find((s) => normalize(s?.name) === "over");
+  //   if (overSel && overSel?.odd && typeof overSel.odd.value === "number") {
+  //     return { market: totalsMarket, selection: overSel };
+  //   }
+  // }
 
   const preferredNames = [
     "1x2",

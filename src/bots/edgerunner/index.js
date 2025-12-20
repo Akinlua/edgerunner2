@@ -217,7 +217,8 @@ class EdgeRunner {
         const signInResult = await this.bookmaker.signin(this.username, this.password);
 
         if (!signInResult.success) {
-          const failureMsg = `Critical failure: Could not re-authenticate. Reason: ${signInResult.reason || "Unknown login error."}`;
+          console.log(chalk.red(`[Edgerunner] Sign-in failed: The result: ${JSON.stringify(signInResult)}`));
+          const failureMsg = `Critical failure: Could not re-authenticate. Reason: ${signInResult.error || signInResult.reason || "Unknown login error."}`;
           this.#sendLog(`❌ **Critical Failure:** ${failureMsg}`);
           throw new AuthenticationError(failureMsg);
         }
@@ -859,7 +860,7 @@ class EdgeRunner {
       },
       bookmaker: {
         status: bookmakerStatus,
-        balance: currentBalance, 
+        balance: currentBalance,
         openBets: openBetsCount,
       },
       // Internal Bot Status
