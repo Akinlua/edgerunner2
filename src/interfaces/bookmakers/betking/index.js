@@ -2261,6 +2261,13 @@ class BetKingBookmaker {
   #areCookiesValid = async (cookies) => {
     const accessToken = cookies.find((c) => c.name === "accessToken");
     if (!accessToken) {
+      // BetKing may store the token in localStorage rather than a cookie.
+      // If the bot store already has a cached token (set at login), the session is valid.
+      const cachedToken = this.botStore.getAccessToken();
+      if (cachedToken) {
+        console.log("[Bookmaker] No accessToken cookie, but cached token found in store — treating session as valid.");
+        return true;
+      }
       console.log("[Bookmaker] No accessToken cookie found");
       return false;
     }
@@ -2807,10 +2814,46 @@ class BetKingBookmaker {
         console.log(`[Bookmaker] Cookies found for ${username}: ${JSON.stringify(cookies)}`);
         await this.botStore.setBookmakerCookies(cookies);
 
+        // Primary: check cookies for accessToken
         const accessTokenCookie = cookies.find((c) => c.name === "accessToken");
-        const accessToken = accessTokenCookie ? accessTokenCookie.value : null;
+        let accessToken = accessTokenCookie ? accessTokenCookie.value : null;
 
-        // Get access token from cookies
+        // Fallback: BetKing SPA may store the token in localStorage instead of a cookie
+        if (!accessToken) {
+          console.log("[Bookmaker] accessToken not found in cookies, checking localStorage...");
+          try {
+            accessToken = await page.evaluate(() => {
+              // Common localStorage key patterns used by BetKing / Angular SPAs
+              const candidates = [
+                "accessToken",
+                "access_token",
+                "token",
+                "userToken",
+                "authToken",
+                "auth_token",
+                "jwt",
+              ];
+              for (const key of candidates) {
+                const val = localStorage.getItem(key);
+                if (val) return val;
+              }
+              // Also try scanning all keys for anything that looks like a JWT / Bearer token
+              for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const val = localStorage.getItem(key);
+                if (val && val.startsWith("eyJ")) return val; // JWT starts with eyJ
+              }
+              return null;
+            });
+            if (accessToken) {
+              console.log("[Bookmaker] accessToken found in localStorage.");
+            }
+          } catch (lsErr) {
+            console.error("[Bookmaker] Failed to read localStorage:", lsErr.message);
+          }
+        }
+
+        // Get access token from cookies or localStorage
         if (!accessToken) {
           throw new Error("Access token could not be found after login.");
         }
