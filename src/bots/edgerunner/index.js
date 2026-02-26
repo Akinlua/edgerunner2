@@ -154,7 +154,24 @@ class EdgeRunner {
           await browser.close();
           throw new Error(`Proxy validation failed: ${error.message}`);
         }
+
+        // Authenticate every new page opened by this browser with the proxy credentials.
+        // Without this, only the validation page gets credentials — all subsequent pages
+        // (sign-in, bet placement, etc.) would hit the proxy unauthenticated and fail.
+        if (proxyConf.username && proxyConf.password) {
+          browser.on("targetcreated", async (target) => {
+            const page = await target.page();
+            if (page) {
+              await page.authenticate({
+                username: proxyConf.username,
+                password: proxyConf.password,
+              }).catch(() => { });
+            }
+          });
+          console.log(chalk.blue("[Proxy] -> Proxy credentials applied to all future pages."));
+        }
       }
+
 
       console.log(
         chalk.green(
