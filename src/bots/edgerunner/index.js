@@ -64,7 +64,6 @@ class EdgeRunner {
           "--no-sandbox",
           "--disable-setuid-sandbox",
           "--no-zygote",
-          "--single-process",
           "--disable-extensions",
           "--disable-sync",
           "--disable-translate",

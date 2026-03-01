@@ -4,6 +4,7 @@ services:
   edgerunner-app:
     build: .
     container_name: edgerunner-app
+    shm_size: '2gb'
     ports:
       - "9090:9090"
     volumes:
