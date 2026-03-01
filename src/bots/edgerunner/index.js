@@ -63,7 +63,6 @@ class EdgeRunner {
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
-          "--no-zygote",
           "--disable-extensions",
           "--disable-sync",
           "--disable-translate",
@@ -72,8 +71,6 @@ class EdgeRunner {
           "--disable-gpu",
           "--disable-dev-shm-usage",
           "--disable-http-cache",
-          "--disable-background-networking",
-          "--disable-features=site-per-process",
           "--disable-accelerated-2d-canvas",
           "--disable-background-timer-throttling",
           "--disable-client-side-phishing-detection",
